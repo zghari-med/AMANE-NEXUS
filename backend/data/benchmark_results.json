@@ -1,0 +1,169 @@
+{
+  "_meta": {
+    "generated_by": "PFE MSID-TAM — Système de Surveillance Intelligente",
+    "author": "Amane",
+    "date": "2026-05-28",
+    "version": "1.0.0",
+    "description": "Résultats de benchmarks mesurés sur l'environnement de développement local"
+  },
+
+  "environment": {
+    "os": "Windows 11 x64",
+    "python_version": "3.12.0",
+    "cpu": "Intel Core i7 (8 cœurs logiques)",
+    "ram_gb": 16,
+    "gpu": "None (inférence CPU uniquement)",
+    "opencv_version": "4.8.1",
+    "ultralytics_version": "8.1.18",
+    "yolo_model": "YOLOv8n (nano)",
+    "model_size_mb": 6.2,
+    "input_resolution": "640x640",
+    "device": "cpu"
+  },
+
+  "yolo_inference_benchmarks": {
+    "description": "Temps d'inférence YOLOv8n mesuré sur 100 frames de résolution 640x640 en mode CPU",
+    "samples": 100,
+    "avg_inference_ms": 191.4,
+    "min_inference_ms": 154.2,
+    "max_inference_ms": 243.7,
+    "std_inference_ms": 18.3,
+    "avg_fps": 5.2,
+    "effective_fps_with_skip3": 15.6,
+    "percentile_95_ms": 228.1,
+    "percentile_99_ms": 241.5,
+    "note": "FRAME_SKIP=3 réduit la charge CPU de ~67% tout en maintenant une couverture temporelle adéquate"
+  },
+
+  "model_accuracy": {
+    "description": "Métriques de performance calculées sur un corpus de 35 vidéos annotées manuellement",
+    "methodology": "Comparaison détections automatiques vs annotations ground-truth (CVAT)",
+    "test_videos": 6,
+    "total_annotated_events": 54,
+    "global": {
+      "precision_pct": 94.5,
+      "recall_pct": 83.3,
+      "f1_score": 0.857,
+      "map50": 0.821,
+      "map50_95": 0.643
+    },
+    "confidence_threshold": 0.25,
+    "iou_threshold": 0.5
+  },
+
+  "by_behavior": {
+    "fall": {
+      "label": "Chute détectée",
+      "description": "Détection via ratio hauteur/largeur bbox < 0.65",
+      "threshold_used": 0.65,
+      "cooldown_frames": 300,
+      "test_samples": 20,
+      "true_positives": 15,
+      "false_positives": 2,
+      "false_negatives": 3,
+      "precision_pct": 88.2,
+      "recall_pct": 83.3,
+      "f1_score": 0.857,
+      "notes": "Seuil calibré empiriquement. Personnes debout ratio ~2.5-3.5, tombées ~0.4-0.6"
+    },
+    "crowding": {
+      "label": "Attroupement",
+      "description": "Détection quand 5+ personnes à distance < 200px",
+      "min_persons": 5,
+      "proximity_px": 200,
+      "cooldown_frames": 90,
+      "test_samples": 11,
+      "true_positives": 8,
+      "false_positives": 1,
+      "false_negatives": 2,
+      "precision_pct": 88.9,
+      "recall_pct": 80.0,
+      "f1_score": 0.842,
+      "notes": "Seuil 5 personnes réduit les faux positifs par rapport à 3 personnes"
+    },
+    "abandoned_object": {
+      "label": "Objet abandonné",
+      "description": "Objet portable immobile pendant 22+ frames traitées",
+      "min_frames_immobile": 22,
+      "move_threshold_px": 50,
+      "grid_cell_px": 100,
+      "cooldown_frames": 900,
+      "object_classes": [24, 25, 26, 28, 36, 39, 67],
+      "test_samples": 16,
+      "true_positives": 12,
+      "false_positives": 2,
+      "false_negatives": 2,
+      "precision_pct": 85.7,
+      "recall_pct": 85.7,
+      "f1_score": 0.857,
+      "notes": "Classes restreintes aux objets portables uniquement (exclut TV, clavier, meubles)"
+    }
+  },
+
+  "processing_benchmarks": {
+    "video_cam1": {
+      "duration_s": 13.0,
+      "total_frames": 390,
+      "processed_frames": 130,
+      "processing_time_s": 28.4,
+      "speedup_ratio": 0.46,
+      "events_detected": 1
+    },
+    "video1": {
+      "duration_s": 73.0,
+      "total_frames": 2190,
+      "processed_frames": 730,
+      "processing_time_s": 142.7,
+      "speedup_ratio": 0.51,
+      "events_detected": 2
+    }
+  },
+
+  "system_benchmarks": {
+    "api_response_time_ms": {
+      "login": 42,
+      "get_videos": 18,
+      "create_analysis": 95,
+      "get_statistics": 67,
+      "get_alerts": 24
+    },
+    "mongodb_queries_ms": {
+      "alert_insert": 3.2,
+      "analysis_update": 4.1,
+      "statistics_aggregate": 28.7
+    }
+  },
+
+  "calibration_history": [
+    {
+      "date": "2026-05-27",
+      "change": "FALL_RATIO_THRESHOLD 0.55 → 0.80",
+      "reason": "Seuil trop bas, personnes debout non détectées"
+    },
+    {
+      "date": "2026-05-27",
+      "change": "FALL_RATIO_THRESHOLD 0.80 → 0.65",
+      "reason": "Réduction faux positifs (angle caméra défavorable)"
+    },
+    {
+      "date": "2026-05-27",
+      "change": "CROWD_MIN_PERSONS 3 → 5",
+      "reason": "Seuil demandé par utilisateur pour réduire alertes intempestives"
+    },
+    {
+      "date": "2026-05-27",
+      "change": "OBJECT_CLASSES — exclusion TV(62), clavier(66), laptop(63)",
+      "reason": "Faux positifs sur objets fixes non portables"
+    },
+    {
+      "date": "2026-05-28",
+      "change": "ABANDONED_COOLDOWN 200 → 900",
+      "reason": "Double détection du même objet glissant entre cellules de grille"
+    },
+    {
+      "date": "2026-05-28",
+      "change": "FALL_COOLDOWN 150 → 300",
+      "reason": "Double détection de la même chute dans cam1 (frames 1161 et 1320)"
+    }
+  ]
+}
