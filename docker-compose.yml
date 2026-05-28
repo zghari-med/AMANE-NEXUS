@@ -1,0 +1,114 @@
+version: "3.9"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# docker-compose — PFE MSID-TAM Surveillance Platform
+# Services : mongodb · redis · backend · frontend
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── MongoDB ───────────────────────────────────────────────────────────────
+  mongodb:
+    image: mongo:6
+    container_name: amane_nexus_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: surveillance_db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ping:1})"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - amane_nexus_net
+
+  # ── Redis ─────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: amane_nexus_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - amane_nexus_net
+
+  # ── Backend Flask ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend-builder
+    container_name: amane_nexus_backend
+    restart: unless-stopped
+    command: python app_simple.py
+    working_dir: /build/backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/uploads:/build/backend/uploads
+      - ./backend/captures:/build/backend/captures
+      - ./backend/data:/build/backend/data
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/
+      REDIS_HOST: redis
+      SECRET_KEY: ${SECRET_KEY:-pfe_surveillance_2026}
+      ANALYTICS_CACHE_TTL: ${ANALYTICS_CACHE_TTL:-3600}
+      BENCHMARK_FILE_PATH: /build/backend/data/benchmark_results.json
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - amane_nexus_net
+
+  # ── Frontend Nginx ────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-builder
+    container_name: amane_nexus_frontend
+    restart: unless-stopped
+    command: sh -c "npm run preview -- --host 0.0.0.0 --port 3000"
+    working_dir: /build/frontend
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://backend:5000
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - amane_nexus_net
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  amane_nexus_net:
+    driver: bridge

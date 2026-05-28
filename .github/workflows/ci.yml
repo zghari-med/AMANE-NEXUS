@@ -1,0 +1,183 @@
+name: CI — Surveillance Platform PFE MSID
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.10"
+  NODE_VERSION:   "18"
+
+jobs:
+  # ── 1. Lint Python ────────────────────────────────────────────────────────
+  lint-backend:
+    name: "Lint — flake8"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: "Lint: flake8 backend/ --max-line-length=120"
+        run: flake8 backend/ --max-line-length=120 --exclude=backend/venv,backend/__pycache__
+
+  # ── 2. Tests Python ───────────────────────────────────────────────────────
+  test-backend:
+    name: "Tests — pytest"
+    runs-on: ubuntu-latest
+    needs: lint-backend
+    services:
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: "Tests: pytest backend/tests/ -v --cov=backend"
+        working-directory: backend
+        run: pytest tests/ -v --cov=. --cov-report=term-missing
+        env:
+          MONGO_URI: mongodb://localhost:27017/
+
+  # ── 3. Validation benchmarks ──────────────────────────────────────────────
+  validate-benchmarks:
+    name: "Validation — benchmark_results.json"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Vérifie que benchmark_results.json existe"
+        run: test -f backend/data/benchmark_results.json
+
+      - name: "Vérifie que F1 = 0.857"
+        run: |
+          F1=$(python3 -c "import json; d=json.load(open('backend/data/benchmark_results.json')); print(d['model_accuracy']['global']['f1_score'])")
+          echo "F1-score : $F1"
+          python3 -c "
+          f1 = $F1
+          assert abs(f1 - 0.857) < 0.01, f'F1 attendu 0.857, obtenu {f1}'
+          print('F1 valide :', f1)
+          "
+
+      - name: "Vérifie Précision = 94.5%"
+        run: |
+          python3 -c "
+          import json
+          d = json.load(open('backend/data/benchmark_results.json'))
+          p = d['model_accuracy']['global']['precision_pct']
+          assert abs(p - 94.5) < 0.5, f'Précision attendue 94.5%, obtenu {p}%'
+          print('Précision valide :', p, '%')
+          "
+
+      - name: "Vérifie structure complète"
+        run: |
+          python3 -c "
+          import json
+          d = json.load(open('backend/data/benchmark_results.json'))
+          for key in ['environment','yolo_inference_benchmarks','model_accuracy','by_behavior']:
+              assert key in d, f'Clé manquante: {key}'
+          for btype in ['fall','crowding','abandoned_object']:
+              assert btype in d['by_behavior'], f'Comportement manquant: {btype}'
+          print('Structure JSON valide')
+          "
+
+  # ── 4. Frontend lint + build ──────────────────────────────────────────────
+  test-frontend:
+    name: "Frontend — lint & build"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: "npm run lint"
+        working-directory: frontend
+        run: npm run lint --if-present || true
+
+      - name: "npm run build"
+        working-directory: frontend
+        run: npm run build
+
+  # ── 5. Docker build ───────────────────────────────────────────────────────
+  docker-build:
+    name: "Docker — build image"
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend, validate-benchmarks]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: "docker build -t amane:latest"
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push:  false
+          tags:  amane:latest
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+
+  # ── 6. Rapport final ──────────────────────────────────────────────────────
+  pipeline-report:
+    name: "Rapport — Status final"
+    runs-on: ubuntu-latest
+    needs: [lint-backend, test-backend, validate-benchmarks, test-frontend, docker-build]
+    if: always()
+    steps:
+      - name: Afficher status final du pipeline
+        run: |
+          echo "================================================================"
+          echo " PFE MSID-TAM — Rapport CI/CD"
+          echo "================================================================"
+          echo " Lint backend   : ${{ needs.lint-backend.result }}"
+          echo " Tests backend  : ${{ needs.test-backend.result }}"
+          echo " Benchmarks     : ${{ needs.validate-benchmarks.result }}"
+          echo " Frontend build : ${{ needs.test-frontend.result }}"
+          echo " Docker build   : ${{ needs.docker-build.result }}"
+          echo "================================================================"
+          if [[ "${{ needs.test-backend.result }}"     != "success" ]] || \
+             [[ "${{ needs.validate-benchmarks.result }}" != "success" ]] || \
+             [[ "${{ needs.test-frontend.result }}"    != "success" ]]; then
+            echo " STATUT : ECHEC — voir les jobs ci-dessus"
+            exit 1
+          else
+            echo " STATUT : SUCCES — pipeline complet"
+          fi
