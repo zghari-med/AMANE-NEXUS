@@ -12,9 +12,9 @@ from data.analytics import AnalyticsEngine
 
 log = logging.getLogger(__name__)
 
-BASE_DIR        = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BENCHMARK_PATH  = os.path.join(BASE_DIR, "data", "benchmark_results.json")
-CACHE_TTL       = int(os.environ.get("ANALYTICS_CACHE_TTL", 3600))  # 1h par défaut
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BENCHMARK_PATH = os.path.join(BASE_DIR, "data", "benchmark_results.json")
+CACHE_TTL = int(os.environ.get("ANALYTICS_CACHE_TTL", 3600))  # 1h par défaut
 
 
 class _Cache:

@@ -24,7 +24,9 @@ except ImportError:
         DEBUG = True
         SECRET_KEY = 'dev-key'
         MONGO_URI = 'mongodb://localhost:27017/surveillance_db'
-    get_config = lambda: FallbackConfig
+
+    def get_config():
+        return FallbackConfig
 
 # Essayer d'importer les routes
 try:

@@ -5,9 +5,8 @@ import sys
 print("[1] Test des imports...")
 try:
     from flask import Flask
-    from flask_cors import CORS
     import redis
-    print("    [OK] Flask, CORS, Redis")
+    print("    [OK] Flask, Redis")
 except Exception as e:
     print(f"    [FAIL] {e}")
     sys.exit(1)
@@ -17,7 +16,7 @@ try:
     r = redis.Redis(host='localhost', port=6379, decode_responses=True)
     r.ping()
     print("    [OK] Redis connecte")
-except:
+except Exception:
     print("    [WARN] Redis non disponible")
 
 print("[3] Creation de l'app Flask...")
