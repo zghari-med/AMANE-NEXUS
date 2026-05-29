@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware'
 
 export const useAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isLoading: false,
@@ -53,7 +53,15 @@ export const useAuthStore = create(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        // Notify backend for activity logging
+        const currentToken = get().token
+        if (currentToken) {
+          fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${currentToken}` }
+          }).catch(() => {}) // Fire-and-forget
+        }
         set({ user: null, token: null })
       },
 
