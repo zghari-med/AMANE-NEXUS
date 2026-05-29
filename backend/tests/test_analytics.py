@@ -6,7 +6,7 @@ Utilisent des données mockées (pas de connexion MongoDB réelle nécessaire).
 import sys
 import os
 import unittest
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch  # noqa: F401
 from datetime import datetime, timezone, timedelta
 
 # Ajouter le dossier backend au path
@@ -19,7 +19,7 @@ class TestAnalyticsEngineInitialization(unittest.TestCase):
     @patch("data.analytics.MongoClient")
     def test_analytics_engine_initialization(self, mock_client):
         """L'AnalyticsEngine s'initialise correctement et se connecte à MongoDB."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         engine = AnalyticsEngine(
             mongo_uri="mongodb://localhost:27017/",
@@ -33,7 +33,7 @@ class TestAnalyticsEngineInitialization(unittest.TestCase):
     @patch("data.analytics.MongoClient")
     def test_engine_uses_correct_db(self, mock_client):
         """L'engine utilise bien la base 'surveillance_db'."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         mock_mongo = MagicMock()
         mock_client.return_value = mock_mongo
@@ -50,7 +50,7 @@ class TestDetectionAccuracy(unittest.TestCase):
     @patch("data.analytics.MongoClient")
     def test_detection_accuracy_structure(self, mock_client):
         """get_detection_accuracy() retourne la structure attendue."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         engine = AnalyticsEngine.__new__(AnalyticsEngine)
         engine.client = MagicMock()
@@ -67,7 +67,7 @@ class TestDetectionAccuracy(unittest.TestCase):
     @patch("data.analytics.MongoClient")
     def test_global_f1_equals_0857(self, mock_client):
         """F1-score global doit être ~85.7% (±1%)."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         engine = AnalyticsEngine.__new__(AnalyticsEngine)
         engine.client = MagicMock()
@@ -83,7 +83,7 @@ class TestDetectionAccuracy(unittest.TestCase):
     @patch("data.analytics.MongoClient")
     def test_precision_in_valid_range(self, mock_client):
         """La précision globale doit être entre 80% et 100%."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         engine = AnalyticsEngine.__new__(AnalyticsEngine)
         engine.client = MagicMock()
@@ -97,7 +97,7 @@ class TestDetectionAccuracy(unittest.TestCase):
     @patch("data.analytics.MongoClient")
     def test_f1_formula_consistency(self, mock_client):
         """F1 = 2*P*R/(P+R) cohérent pour chaque comportement."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         engine = AnalyticsEngine.__new__(AnalyticsEngine)
         engine.client = MagicMock()
@@ -120,7 +120,7 @@ class TestStatisticsComputation(unittest.TestCase):
 
     def _make_engine_with_alerts(self, alerts):
         """Helper: crée un engine mocké retournant des alertes données."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         engine = AnalyticsEngine.__new__(AnalyticsEngine)
         engine.client = MagicMock()
@@ -135,7 +135,7 @@ class TestStatisticsComputation(unittest.TestCase):
 
     def test_empty_alerts_returns_zero_total(self):
         """Avec 0 alertes, total_alerts doit être 0."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         engine = self._make_engine_with_alerts([])
         result = engine.get_alerts_statistics(days=7)
@@ -145,7 +145,7 @@ class TestStatisticsComputation(unittest.TestCase):
 
     def test_statistics_structure(self):
         """La structure retournée contient tous les champs requis."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         now = datetime.now(timezone.utc)
         alerts = [
@@ -163,7 +163,7 @@ class TestStatisticsComputation(unittest.TestCase):
 
     def test_alert_count_correct(self):
         """total_alerts correspond au nombre d'alertes en entrée."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         now = datetime.now(timezone.utc)
         alerts = [
@@ -184,7 +184,7 @@ class TestTrendAnalysis(unittest.TestCase):
 
     def test_empty_returns_valid_structure(self):
         """Avec 0 alertes, trend_analysis retourne une structure valide."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         engine = AnalyticsEngine.__new__(AnalyticsEngine)
         engine.client = MagicMock()
@@ -204,7 +204,7 @@ class TestTrendAnalysis(unittest.TestCase):
 
     def test_trend_direction_stable(self):
         """Avec des counts constants, la direction doit être 'stable'."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         now = datetime.now(timezone.utc)
         alerts = [
@@ -226,7 +226,7 @@ class TestTrendAnalysis(unittest.TestCase):
 
     def test_avg_per_day_calculation(self):
         """avg_per_day = total / days."""
-        from data.analytics import AnalyticsEngine
+        from data.analytics import AnalyticsEngine  # noqa: F401
 
         now = datetime.now(timezone.utc)
         alerts = [

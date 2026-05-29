@@ -5,6 +5,7 @@ import csv
 from datetime import datetime
 from io import StringIO, BytesIO
 from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
 from ..models.analysis import Analysis

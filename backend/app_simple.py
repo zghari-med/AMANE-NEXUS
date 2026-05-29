@@ -735,10 +735,14 @@ def get_activity_logs():
 
     total = db.activity_log.count_documents(query)
     logs  = list(db.activity_log.find(query).sort('created_at', -1).skip(skip).limit(limit))
-    for l in logs:
-        l['_id'] = str(l['_id'])
-        l['user_id'] = str(l['user_id']) if l.get('user_id') else None
-        l['created_at'] = l['created_at'].strftime('%Y-%m-%dT%H:%M:%S') if hasattr(l.get('created_at'), 'strftime') else str(l.get('created_at', ''))
+    for entry in logs:
+        entry['_id'] = str(entry['_id'])
+        entry['user_id'] = str(entry['user_id']) if entry.get('user_id') else None
+        entry['created_at'] = (
+            entry['created_at'].strftime('%Y-%m-%dT%H:%M:%S')
+            if hasattr(entry.get('created_at'), 'strftime')
+            else str(entry.get('created_at', ''))
+        )
 
     return jsonify({'logs': logs, 'total': total, 'page': page, 'limit': limit}), 200
 

@@ -10,13 +10,12 @@ import unittest
 import json
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 os.environ.setdefault('SECRET_KEY', 'test_secret_key_2026')
-os.environ.setdefault('MONGO_DB',   'surveillance_test_db')
+os.environ.setdefault('MONGO_DB', 'surveillance_test_db')
 
-import app_simple as app_module
-from app_simple import app, db
+from app_simple import app, db  # noqa: E402,F401
 
 
 def get_token(client, email='test_api@test.com', password='testpass123'):
