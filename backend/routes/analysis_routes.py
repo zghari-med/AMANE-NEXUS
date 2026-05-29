@@ -1,7 +1,7 @@
 """Routes de gestion des analyses."""
 
 from flask import Blueprint, request, jsonify, send_file
-from ..services.auth_service import token_required, admin_required
+from ..services.auth_service import token_required
 from ..services.analysis_service import AnalysisService
 from ..services.export_service import ExportService
 
@@ -117,7 +117,7 @@ def export_to_json(analysis_id):
     )
 
 
-@analysis_bp.route('/<analysis_id>/export/pdf', methods=['GET'])
+@analysis_bp.route('/<analysis_id>/export/pd', methods=['GET'])
 @token_required
 def export_to_pdf(analysis_id):
     """Exporte une analyse en PDF."""
@@ -129,7 +129,7 @@ def export_to_pdf(analysis_id):
     from io import BytesIO
     return send_file(
         BytesIO(result['content']),
-        mimetype='application/pdf',
+        mimetype='application/pd',
         as_attachment=True,
         download_name=result['filename']
     )

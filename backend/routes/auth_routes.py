@@ -2,7 +2,6 @@
 
 from flask import Blueprint, request, jsonify
 from ..services.auth_service import AuthService, token_required
-from ..models.user import User
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 

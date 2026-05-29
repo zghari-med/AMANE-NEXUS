@@ -1,7 +1,7 @@
 """Modèle utilisateur."""
 
 from datetime import datetime
-from mongoengine import Document, StringField, EmailField, BooleanField, DateTimeField, ListField
+from mongoengine import Document, StringField, EmailField, BooleanField, DateTimeField
 
 
 class User(Document):

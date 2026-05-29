@@ -15,13 +15,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 #  Reproduction exacte des algorithmes depuis app_simple.py
 # ─────────────────────────────────────────────────────────────
 
-FALL_RATIO       = 0.65
-FALL_COOLDOWN    = 300
-CROWD_MIN        = 5
-CROWD_COOLDOWN   = 90
-STATIONARY_THR   = 22
+FALL_RATIO = 0.65
+FALL_COOLDOWN = 300
+CROWD_MIN = 5
+CROWD_COOLDOWN = 90
+STATIONARY_THR = 22
 ABANDON_COOLDOWN = 900
-GRID_SZ          = 100
+GRID_SZ = 100
 
 
 def detect_fall(persons, frame_count, last_fall):
@@ -67,19 +67,19 @@ def detect_abandoned(persons, frame_count, object_grid, last_abandon):
 
 def make_person(w, h, cx=100, cy=100, pid='p1'):
     return {'w': w, 'h': h, 'cx': cx, 'cy': cy, 'pid': pid,
-            'box': (cx - w//2, cy - h//2, cx + w//2, cy + h//2)}
+            'box': (cx - w // 2, cy - h // 2, cx + w // 2, cy + h // 2)}
 
 
 def compute_metrics(tp, fp, fn, tn):
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-    recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-    f1        = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
-    accuracy  = (tp + tn) / (tp + fp + fn + tn) if (tp + fp + fn + tn) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+    accuracy = (tp + tn) / (tp + fp + fn + tn) if (tp + fp + fn + tn) > 0 else 0.0
     return {
         'precision': round(precision, 4),
-        'recall':    round(recall, 4),
-        'f1':        round(f1, 4),
-        'accuracy':  round(accuracy, 4),
+        'recall': round(recall, 4),
+        'f1': round(f1, 4),
+        'accuracy': round(accuracy, 4),
     }
 
 
@@ -116,8 +116,8 @@ class TestFallDetectionAgent(unittest.TestCase):
         """Meme personne frame 1 puis frame 100 (<300) -> 1 seule alerte."""
         p = make_person(w=180, h=50)
         last_fall = {}
-        e1 = detect_fall([p], frame_count=1,   last_fall=last_fall)
-        e2 = detect_fall([p], frame_count=100,  last_fall=last_fall)
+        e1 = detect_fall([p], frame_count=1, last_fall=last_fall)
+        e2 = detect_fall([p], frame_count=100, last_fall=last_fall)
         self.assertEqual(len(e1), 1)
         self.assertEqual(e2, [])
 
@@ -125,16 +125,16 @@ class TestFallDetectionAgent(unittest.TestCase):
         """Meme personne apres 302 frames -> 2eme alerte."""
         p = make_person(w=180, h=50)
         last_fall = {}
-        detect_fall([p], frame_count=1,   last_fall=last_fall)
+        detect_fall([p], frame_count=1, last_fall=last_fall)
         e2 = detect_fall([p], frame_count=302, last_fall=last_fall)
         self.assertIn('fall', e2)
 
     def test_plusieurs_personnes_une_tombe(self):
         """3 personnes, 1 tombee -> 1 alerte fall."""
         persons = [
-            make_person(w=60,  h=180, cx=100, pid='p1'),
-            make_person(w=60,  h=180, cx=200, pid='p2'),
-            make_person(w=180, h=50,  cx=300, pid='p3'),
+            make_person(w=60, h=180, cx=100, pid='p1'),
+            make_person(w=60, h=180, cx=200, pid='p2'),
+            make_person(w=180, h=50, cx=300, pid='p3'),
         ]
         events = detect_fall(persons, 1, {})
         self.assertEqual(events.count('fall'), 1)
@@ -165,35 +165,41 @@ class TestFallDetectionAgent(unittest.TestCase):
 
         # 10 TP - ratio < 0.65, cooldowns distincts
         for i in range(10):
-            p = make_person(w=180, h=50, cx=i*50+50, pid=f'fall_{i}')
+            p = make_person(w=180, h=50, cx=i * 50 + 50, pid=f'fall_{i}')
             e = detect_fall([p], frame_count=1, last_fall={})
-            if 'fall' in e: tp += 1
-            else:           fn += 1
+            if 'fall' in e:
+                tp += 1
+            else:
+                fn += 1
 
         # 5 TN - debout
         for i in range(5):
-            p = make_person(w=60, h=180, cx=i*50, pid=f'stand_{i}')
+            p = make_person(w=60, h=180, cx=i * 50, pid=f'stand_{i}')
             e = detect_fall([p], frame_count=1, last_fall={})
-            if 'fall' not in e: tn += 1
-            else:                fp += 1
+            if 'fall' not in e:
+                tn += 1
+            else:
+                fp += 1
 
         # 5 FN - cooldown actif
         last_fall = {}
         p = make_person(w=180, h=50, pid='cd')
         detect_fall([p], frame_count=1, last_fall=last_fall)
         for i in range(5):
-            e = detect_fall([p], frame_count=50+i*10, last_fall=last_fall)
-            if 'fall' not in e: fn += 1
-            else:                tp += 1
+            e = detect_fall([p], frame_count=50 + i * 10, last_fall=last_fall)
+            if 'fall' not in e:
+                fn += 1
+            else:
+                tp += 1
 
         m = compute_metrics(tp, fp, fn, tn)
         print(f"\n  [CHUTE] TP={tp} FP={fp} FN={fn} TN={tn}")
         print(f"  Precision={m['precision']:.4f}  Recall={m['recall']:.4f}  "
               f"F1={m['f1']:.4f}  Accuracy={m['accuracy']:.4f}")
 
-        self.assertEqual(m['precision'],  1.0)
-        self.assertGreater(m['recall'],   0.60)
-        self.assertGreater(m['f1'],       0.75)
+        self.assertEqual(m['precision'], 1.0)
+        self.assertGreater(m['recall'], 0.60)
+        self.assertGreater(m['f1'], 0.75)
         self.assertGreater(m['accuracy'], 0.70)
 
 
@@ -203,7 +209,7 @@ class TestFallDetectionAgent(unittest.TestCase):
 class TestCrowdDetectionAgent(unittest.TestCase):
 
     def _crowd(self, n):
-        return [make_person(60, 180, cx=100+i*25, pid=f'c{i}') for i in range(n)]
+        return [make_person(60, 180, cx=100 + i * 25, pid=f'c{i}') for i in range(n)]
 
     def test_4_personnes_pas_attroupement(self):
         """4 personnes -> PAS d'attroupement."""
@@ -256,28 +262,34 @@ class TestCrowdDetectionAgent(unittest.TestCase):
 
         for n in [5, 6, 5, 7, 5, 8, 5, 9, 5, 6]:
             e, _ = detect_crowd(self._crowd(n), 1, -CROWD_COOLDOWN)
-            if 'crowding' in e: tp += 1
-            else:               fn += 1
+            if 'crowding' in e:
+                tp += 1
+            else:
+                fn += 1
 
         for n in [1, 2, 3, 4, 4]:
             e, _ = detect_crowd(self._crowd(n), 1, -CROWD_COOLDOWN)
-            if 'crowding' not in e: tn += 1
-            else:                   fp += 1
+            if 'crowding' not in e:
+                tn += 1
+            else:
+                fp += 1
 
         _, last = detect_crowd(self._crowd(6), 1, -CROWD_COOLDOWN)
         for offset in [30, 40, 50, 60, 70]:
-            e, _ = detect_crowd(self._crowd(6), 1+offset, last)
-            if 'crowding' not in e: fn += 1
-            else:                   tp += 1
+            e, _ = detect_crowd(self._crowd(6), 1 + offset, last)
+            if 'crowding' not in e:
+                fn += 1
+            else:
+                tp += 1
 
         m = compute_metrics(tp, fp, fn, tn)
         print(f"\n  [ATTROUPEMENT] TP={tp} FP={fp} FN={fn} TN={tn}")
         print(f"  Precision={m['precision']:.4f}  Recall={m['recall']:.4f}  "
               f"F1={m['f1']:.4f}  Accuracy={m['accuracy']:.4f}")
 
-        self.assertEqual(m['precision'],  1.0)
-        self.assertGreater(m['recall'],   0.55)
-        self.assertGreater(m['f1'],       0.70)
+        self.assertEqual(m['precision'], 1.0)
+        self.assertGreater(m['recall'], 0.55)
+        self.assertGreater(m['f1'], 0.70)
         self.assertGreater(m['accuracy'], 0.65)
 
 
@@ -357,17 +369,21 @@ class TestAbandonedObjectAgent(unittest.TestCase):
             grid = {cell: STATIONARY_THR - 1}
             last = {}
             e = detect_abandoned([], ABANDON_COOLDOWN + 1, grid, last)
-            if 'abandoned' in e: tp += 1
-            else:                fn += 1
+            if 'abandoned' in e:
+                tp += 1
+            else:
+                fn += 1
 
         for i in range(5):
-            cx, cy = (i+1)*60, (i+1)*60
+            cx, cy = (i + 1) * 60, (i + 1) * 60
             persons = [make_person(60, 180, cx=cx, cy=cy, pid=f'occ_{i}')]
-            grid = {(cx//GRID_SZ, cy//GRID_SZ): STATIONARY_THR + 5}
+            grid = {(cx // GRID_SZ, cy // GRID_SZ): STATIONARY_THR + 5}
             last = {}
             e = detect_abandoned(persons, ABANDON_COOLDOWN + 1, grid, last)
-            if 'abandoned' not in e: tn += 1
-            else:                    fp += 1
+            if 'abandoned' not in e:
+                tn += 1
+            else:
+                fp += 1
 
         cell = (20, 20)
         grid = {cell: STATIONARY_THR - 1}
@@ -375,18 +391,20 @@ class TestAbandonedObjectAgent(unittest.TestCase):
         detect_abandoned([], ABANDON_COOLDOWN + 1, grid, last)
         for i in range(5):
             grid[cell] = STATIONARY_THR - 1
-            e = detect_abandoned([], ABANDON_COOLDOWN + 1 + (i+1)*50, grid, last)
-            if 'abandoned' not in e: fn += 1
-            else:                    tp += 1
+            e = detect_abandoned([], ABANDON_COOLDOWN + 1 + (i + 1) * 50, grid, last)
+            if 'abandoned' not in e:
+                fn += 1
+            else:
+                tp += 1
 
         m = compute_metrics(tp, fp, fn, tn)
         print(f"\n  [OBJET ABANDONNE] TP={tp} FP={fp} FN={fn} TN={tn}")
         print(f"  Precision={m['precision']:.4f}  Recall={m['recall']:.4f}  "
               f"F1={m['f1']:.4f}  Accuracy={m['accuracy']:.4f}")
 
-        self.assertEqual(m['precision'],  1.0)
-        self.assertGreater(m['recall'],   0.55)
-        self.assertGreater(m['f1'],       0.70)
+        self.assertEqual(m['precision'], 1.0)
+        self.assertGreater(m['recall'], 0.55)
+        self.assertGreater(m['f1'], 0.70)
         self.assertGreater(m['accuracy'], 0.65)
 
 
@@ -405,19 +423,19 @@ class TestGlobalBenchmark(unittest.TestCase):
 
         SEP = "=" * 62
         print(f"\n{SEP}")
-        print(f"  METRIQUES GLOBALES SYSTEME  ({tp+fp+fn+tn} cas synthetiques)")
+        print(f"  METRIQUES GLOBALES SYSTEME  ({tp + fp + fn + tn} cas synthetiques)")
         print(SEP)
         print(f"  TP={tp}  FP={fp}  FN={fn}  TN={tn}")
-        print(f"  Precision  = {m['precision']:.4f}  ({m['precision']*100:.1f}%)")
-        print(f"  Recall     = {m['recall']:.4f}  ({m['recall']*100:.1f}%)")
-        print(f"  F1-Score   = {m['f1']:.4f}  ({m['f1']*100:.1f}%)")
-        print(f"  Accuracy   = {m['accuracy']:.4f}  ({m['accuracy']*100:.1f}%)")
+        print(f"  Precision  = {m['precision']:.4f}  ({m['precision'] * 100:.1f}%)")
+        print(f"  Recall     = {m['recall']:.4f}  ({m['recall'] * 100:.1f}%)")
+        print(f"  F1-Score   = {m['f1']:.4f}  ({m['f1'] * 100:.1f}%)")
+        print(f"  Accuracy   = {m['accuracy']:.4f}  ({m['accuracy'] * 100:.1f}%)")
         print(SEP)
 
         self.assertGreaterEqual(m['precision'], 0.85)
-        self.assertGreaterEqual(m['recall'],    0.60)
-        self.assertGreaterEqual(m['f1'],        0.70)
-        self.assertGreaterEqual(m['accuracy'],  0.70)
+        self.assertGreaterEqual(m['recall'], 0.60)
+        self.assertGreaterEqual(m['f1'], 0.70)
+        self.assertGreaterEqual(m['accuracy'], 0.70)
 
 
 if __name__ == '__main__':

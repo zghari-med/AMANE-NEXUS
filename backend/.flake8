@@ -1,0 +1,16 @@
+[flake8]
+max-line-length = 120
+exclude = venv,__pycache__,.git,*.egg-info
+ignore =
+    # Non-critical indentation issues
+    E128,E129,E127,E126,
+    # Long lines that are hard to break (JSON, comments)
+    E501,
+    # Whitespace before/after operator (minor)
+    E221,E241,
+    # Line break warnings (PEP 8 conflict)
+    W503,W504,
+# Show source
+show-source = True
+# Statistics
+statistics = True
