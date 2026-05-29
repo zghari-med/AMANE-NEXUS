@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import StatCard from '../components/StatCard'
-import { Users, Video, BarChart3, AlertCircle, Activity } from 'lucide-react'
+import { Users, Video, BarChart3, AlertCircle, Camera, Clock } from 'lucide-react'
 import { useAuthStore } from '../context/authStore'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import {
+  RadialBarChart, RadialBar, ResponsiveContainer, Tooltip,
+} from 'recharts'
 
-const API = 'http://localhost:5000'
+import { API, captureUrl } from '../services/api'
 
 const EVENT_LABELS = {
   fall:      'Chute détectée',
@@ -19,11 +21,17 @@ const RISK_COLORS = {
 }
 
 export default function DashboardAdminPage() {
-  const { token } = useAuthStore()
+  const { token, user } = useAuthStore()
+  const capture = (f) => captureUrl(f, token)
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const isAdmin = user?.role === 'admin'
 
-  useEffect(() => { fetchData() }, [])
+  useEffect(() => {
+    fetchData()
+    const interval = setInterval(fetchData, 30000) // auto-refresh toutes les 30s
+    return () => clearInterval(interval)
+  }, [])
 
   const fetchData = async () => {
     try {
@@ -49,102 +57,141 @@ export default function DashboardAdminPage() {
         <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-6 py-5">
             <h1 className="text-2xl font-bold text-gray-900">Tableau de Bord</h1>
-            <p className="text-gray-500 text-sm">Vue d'ensemble de la plateforme</p>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-6 py-8">
 
           {/* Stat cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            <StatCard title="Utilisateurs"       value={loading ? '…' : (stats?.total_users ?? 0)}       icon={Users}       color="blue"   />
-            <StatCard title="Vidéos"             value={loading ? '…' : (stats?.total_videos ?? 0)}      icon={Video}       color="purple" />
-            <StatCard title="Analyses"           value={loading ? '…' : (stats?.total_analyses ?? 0)}    icon={BarChart3}   color="green"  />
-            <StatCard title="Alertes totales"    value={loading ? '…' : (stats?.total_alerts ?? 0)}      icon={AlertCircle} color="red"    />
+          <div className={`grid gap-5 mb-8 ${isAdmin ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
+            {isAdmin && (
+              <StatCard title="Utilisateurs"    value={loading ? '…' : (stats?.total_users ?? 0)}    icon={Users}       color="blue"   />
+            )}
+            <StatCard title="Vidéos"            value={loading ? '…' : (stats?.total_videos ?? 0)}   icon={Video}       color="purple" />
+            <StatCard title="Analyses"          value={loading ? '…' : (stats?.total_analyses ?? 0)} icon={BarChart3}   color="green"  />
+            <StatCard title="Alertes totales"   value={loading ? '…' : (stats?.total_alerts ?? 0)}   icon={AlertCircle} color="red"    />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 gap-6 mb-8">
 
-            {/* Bar chart — per video */}
-            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border p-5">
-              <h3 className="font-semibold text-gray-900 mb-4">Détections par Vidéo</h3>
-              {stats?.chart_data?.length > 0 ? (
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={stats.chart_data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Legend iconSize={10} />
-                    <Bar dataKey="chutes"        fill="#ef4444" name="Chutes"        radius={[3,3,0,0]} />
-                    <Bar dataKey="attroupements" fill="#f59e0b" name="Attroupements" radius={[3,3,0,0]} />
-                    <Bar dataKey="objets"        fill="#3b82f6" name="Obj. abandonnés" radius={[3,3,0,0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
-                  {loading ? 'Chargement…' : 'Aucune analyse complétée'}
+            {/* Radial chart — detection breakdown (full width) */}
+            <div className="bg-white rounded-xl shadow-sm border p-6">
+              <h3 className="text-base font-semibold text-gray-900 mb-1">Répartition des Détections</h3>
+              <p className="text-xs text-gray-500 mb-4">Volume d'alertes par catégorie</p>
+              {total > 0 ? (() => {
+                const radialData = [
+                  { name: 'Obj. abandonnés', value: stats?.alerts_by_type?.abandoned || 0, fill: '#3b82f6' },
+                  { name: 'Attroupements',   value: stats?.alerts_by_type?.crowding  || 0, fill: '#f59e0b' },
+                  { name: 'Chutes',          value: stats?.alerts_by_type?.fall      || 0, fill: '#ef4444' },
+                ]
+                return (
+                  <div className="flex items-center gap-6">
+                    <ResponsiveContainer width="55%" height={240}>
+                      <RadialBarChart
+                        cx="50%" cy="50%"
+                        innerRadius={40} outerRadius={100}
+                        barSize={18}
+                        data={radialData}
+                        startAngle={90} endAngle={-270}
+                      >
+                        <RadialBar dataKey="value" cornerRadius={6} background={{ fill: '#f1f5f9' }} />
+                        <Tooltip formatter={(v, n) => [v, n]} />
+                      </RadialBarChart>
+                    </ResponsiveContainer>
+                    <div className="flex-1 space-y-4">
+                      {[
+                        { key: 'fall',      label: 'Chutes',            color: 'bg-red-500',    text: 'text-red-600' },
+                        { key: 'crowding',  label: 'Attroupements',     color: 'bg-yellow-500', text: 'text-yellow-600' },
+                        { key: 'abandoned', label: 'Obj. abandonnés',   color: 'bg-blue-500',   text: 'text-blue-600' },
+                      ].map(({ key, label, color, text }) => {
+                        const n = stats?.alerts_by_type?.[key] ?? 0
+                        const p = pct(n)
+                        return (
+                          <div key={key}>
+                            <div className="flex justify-between text-sm mb-1.5">
+                              <span className="text-gray-700 font-medium">{label}</span>
+                              <span className={`font-bold ${text}`}>{n} <span className="text-gray-400 font-normal text-xs">({p}%)</span></span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-2.5">
+                              <div className={`${color} h-2.5 rounded-full transition-all duration-700`}
+                                   style={{ width: `${p}%` }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                      <div className="pt-3 border-t text-sm flex justify-between items-center">
+                        <span className="text-gray-500">Total alertes</span>
+                        <span className="text-2xl font-bold text-gray-900">{total}</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })() : (
+                <div className="h-60 flex items-center justify-center text-gray-400 text-sm">
+                  {loading ? 'Chargement…' : 'Aucune alerte enregistrée'}
                 </div>
               )}
             </div>
 
-            {/* Breakdown */}
-            <div className="bg-white rounded-xl shadow-sm border p-5">
-              <h3 className="font-semibold text-gray-900 mb-4">Répartition des alertes</h3>
-              <div className="space-y-4">
-                {[
-                  { key: 'fall',      label: 'Chutes',            color: 'bg-red-500' },
-                  { key: 'crowding',  label: 'Attroupements',     color: 'bg-yellow-500' },
-                  { key: 'abandoned', label: 'Objets abandonnés', color: 'bg-blue-500' },
-                ].map(({ key, label, color }) => {
-                  const n = stats?.alerts_by_type?.[key] ?? 0
-                  const p = pct(n)
+          </div>
+
+          {/* Recent alerts — with datetime + cam + capture */}
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">Alertes Récentes</h3>
+            {loading ? (
+              <div className="py-8 text-center text-gray-400 text-sm">Chargement…</div>
+            ) : stats?.recent_alerts?.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {stats.recent_alerts.map(al => {
+                  const dt = al.created_at ? new Date(al.created_at) : null
+                  const dateStr = dt && !isNaN(dt)
+                    ? dt.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+                    : '—'
+                  const timeStr = dt && !isNaN(dt)
+                    ? dt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                    : ''
+                  const riskStyle =
+                    al.risk_level === 'high'   ? { badge: 'bg-red-100 text-red-700',    border: 'border-red-400',    dot: 'bg-red-500' } :
+                    al.risk_level === 'medium' ? { badge: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-400', dot: 'bg-yellow-500' } :
+                                                  { badge: 'bg-blue-100 text-blue-700',   border: 'border-blue-300',   dot: 'bg-blue-400' }
                   return (
-                    <div key={key}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">{label}</span>
-                        <span className="font-semibold">{n}</span>
-                      </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2">
-                        <div className={`${color} h-2 rounded-full transition-all duration-500`}
-                             style={{ width: `${p}%` }} />
+                    <div key={al._id} className={`rounded-xl border-l-4 ${riskStyle.border} shadow-sm overflow-hidden bg-white`}>
+                      {/* Capture image */}
+                      {al.capture ? (
+                        <div className="relative">
+                          <img
+                            src={capture(al.capture)}
+                            alt={al.event_type}
+                            className="w-full h-32 object-cover"
+                            onError={e => { e.target.parentElement.style.display = 'none' }}
+                          />
+                          <span className={`absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${riskStyle.badge}`}>
+                            {al.risk_level?.toUpperCase()}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="h-20 bg-gray-100 flex items-center justify-center">
+                          <AlertCircle size={28} className="text-gray-300" />
+                        </div>
+                      )}
+                      {/* Info */}
+                      <div className="p-3 space-y-1.5">
+                        <p className="text-sm font-semibold text-gray-900 leading-tight">
+                          {EVENT_LABELS[al.event_type] ?? al.event_type}
+                        </p>
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Camera size={11} />
+                          <span className="truncate">{al.video_title}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                          <Clock size={11} />
+                          <span>{dateStr} {timeStr}</span>
+                        </div>
+                        <p className="text-[10px] text-gray-400">Frame {al.frame_id} · {Number(al.timestamp).toFixed(1)}s</p>
                       </div>
                     </div>
                   )
                 })}
-                <div className="pt-3 border-t text-sm text-gray-500 flex justify-between">
-                  <span>Total événements</span>
-                  <span className="font-bold text-gray-900">{stats?.total_events ?? 0}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent alerts */}
-          <div className="bg-white rounded-xl shadow-sm border p-5">
-            <h3 className="font-semibold text-gray-900 mb-4">Alertes Récentes</h3>
-            {loading ? (
-              <div className="py-8 text-center text-gray-400 text-sm">Chargement…</div>
-            ) : stats?.recent_alerts?.length > 0 ? (
-              <div className="divide-y">
-                {stats.recent_alerts.map(al => (
-                  <div key={al._id} className="flex items-center gap-4 py-3">
-                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${RISK_COLORS[al.risk_level] ?? 'bg-gray-400'}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">
-                        {EVENT_LABELS[al.event_type] ?? al.event_type} — <span className="text-gray-500">{al.video_title}</span>
-                      </p>
-                      <p className="text-xs text-gray-400">Frame {al.frame_id} · {Number(al.timestamp).toFixed(1)}s</p>
-                    </div>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      al.risk_level === 'high'   ? 'bg-red-100 text-red-700' :
-                      al.risk_level === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                                                   'bg-blue-100 text-blue-700'
-                    }`}>
-                      {al.risk_level}
-                    </span>
-                  </div>
-                ))}
               </div>
             ) : (
               <div className="py-8 text-center text-gray-400 text-sm">

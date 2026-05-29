@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Menu, X, LayoutDashboard, Video, BarChart3,
-  LogOut, Users, TrendingUp, Cpu,
+  LogOut, Users, UserCircle,
 } from 'lucide-react'
 import { useAuthStore } from '../context/authStore'
 
@@ -15,16 +15,23 @@ export default function Sidebar() {
     href === '/' ? location.pathname === '/' : location.pathname.startsWith(href)
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard',     href: '/',           color: 'text-blue-400'   },
-    { icon: Video,           label: 'Vidéos',        href: '/videos',     color: 'text-purple-400' },
-    { icon: BarChart3,       label: 'Statistiques',  href: '/statistics', color: 'text-green-400'  },
-    { icon: TrendingUp,      label: 'Tendances',     href: '/trends',     color: 'text-cyan-400'   },
-    { icon: Cpu,             label: 'Benchmarks',    href: '/benchmarks', color: 'text-yellow-400' },
+    { icon: LayoutDashboard, label: 'Dashboard',    href: '/',           color: 'text-blue-400'   },
+    { icon: Video,           label: 'Vidéos',       href: '/videos',     color: 'text-purple-400' },
+    { icon: BarChart3,       label: 'Statistiques', href: '/statistics', color: 'text-green-400'  },
+    { icon: UserCircle,      label: 'Mon Profil',   href: '/profile',    color: 'text-pink-400'   },
   ]
 
-  const adminItems = [
-    { icon: Users, label: 'Utilisateurs', href: '/users', color: 'text-orange-400' },
-  ]
+  const NavLink = ({ item }) => (
+    <Link
+      to={item.href}
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
+        ${isActive(item.href) ? 'bg-slate-700 shadow-sm' : 'hover:bg-slate-700/60'}`}
+    >
+      <item.icon size={18} className={item.color} />
+      <span className="text-sm font-medium">{item.label}</span>
+      {isActive(item.href) && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />}
+    </Link>
+  )
 
   return (
     <>
@@ -48,35 +55,17 @@ export default function Sidebar() {
             <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center">
               <Video size={20} className="text-white" />
             </div>
-            <div>
-              <h1 className="text-lg font-bold leading-tight">AMANE-NEXUS</h1>
-              <p className="text-xs text-slate-400">AI Platform · PFE MSID</p>
-            </div>
+            <h1 className="text-lg font-bold leading-tight">AMANE-NEXUS</h1>
           </div>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-          {menuItems.map(item => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={`
-                flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                ${isActive(item.href)
-                  ? 'bg-slate-700 shadow-sm'
-                  : 'hover:bg-slate-700/60'
-                }
-              `}
-            >
-              <item.icon size={18} className={item.color} />
-              <span className="text-sm font-medium">{item.label}</span>
-              {isActive(item.href) && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />
-              )}
-            </Link>
-          ))}
 
+          {/* Common links — everyone */}
+          {menuItems.map(item => <NavLink key={item.href} item={item} />)}
+
+          {/* Admin-only section */}
           {user?.role === 'admin' && (
             <>
               <div className="px-3 pt-4 pb-1">
@@ -84,25 +73,7 @@ export default function Sidebar() {
                   Administration
                 </p>
               </div>
-              {adminItems.map(item => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                    ${isActive(item.href)
-                      ? 'bg-slate-700 shadow-sm'
-                      : 'hover:bg-slate-700/60'
-                    }
-                  `}
-                >
-                  <item.icon size={18} className={item.color} />
-                  <span className="text-sm font-medium">{item.label}</span>
-                  {isActive(item.href) && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />
-                  )}
-                </Link>
-              ))}
+              <NavLink item={{ icon: Users, label: 'Utilisateurs', href: '/users', color: 'text-orange-400' }} />
             </>
           )}
         </nav>
@@ -134,10 +105,7 @@ export default function Sidebar() {
 
       {/* Mobile overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-20 lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-20 lg:hidden" onClick={() => setIsOpen(false)} />
       )}
     </>
   )
