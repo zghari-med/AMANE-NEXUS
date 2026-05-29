@@ -1,7 +1,7 @@
 """Modèle vidéo."""
 
 from datetime import datetime
-from mongoengine import Document, StringField, ReferenceField, DateTimeField, FloatField, IntField, ListField, DictField, BooleanField
+from mongoengine import Document, StringField, ReferenceField, DateTimeField, FloatField, IntField, ListField, BooleanField
 from .user import User
 
 

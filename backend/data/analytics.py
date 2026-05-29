@@ -17,8 +17,8 @@ log = logging.getLogger(__name__)
 # Basé sur les tests manuels effectués sur les vidéos de référence
 GT_ANNOTATIONS = {
     # (video_title, event_type): (true_positives, false_positives, false_negatives)
-    "fall":      {"tp": 15, "fp": 2, "fn": 3},
-    "crowding":  {"tp": 8,  "fp": 1, "fn": 2},
+    "fall": {"tp": 15, "fp": 2, "fn": 3},
+    "crowding": {"tp": 8, "fp": 1, "fn": 2},
     "abandoned": {"tp": 12, "fp": 2, "fn": 2},
 }
 
@@ -119,19 +119,21 @@ class AnalyticsEngine:
         for event_type, gt in GT_ANNOTATIONS.items():
             tp, fp, fn = gt["tp"], gt["fp"], gt["fn"]
             precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-            recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-            f1        = (2 * precision * recall / (precision + recall)
-                         if (precision + recall) > 0 else 0.0)
+            recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            f1 = (2 * precision * recall / (precision + recall)
+                  if (precision + recall) > 0 else 0.0)
 
             results[event_type] = {
-                "true_positives":  tp,
+                "true_positives": tp,
                 "false_positives": fp,
                 "false_negatives": fn,
                 "precision": round(precision * 100, 1),
-                "recall":    round(recall    * 100, 1),
-                "f1_score":  round(f1        * 100, 1),
+                "recall": round(recall * 100, 1),
+                "f1_score": round(f1 * 100, 1),
             }
-            all_tp += tp; all_fp += fp; all_fn += fn
+            all_tp += tp
+            all_fp += fp
+            all_fn += fn
 
         # Métriques globales (macro-average)
         global_p = all_tp / (all_tp + all_fp) if (all_tp + all_fp) > 0 else 0.0
@@ -142,9 +144,9 @@ class AnalyticsEngine:
         return {
             "by_behavior": results,
             "global": {
-                "precision": round(global_p  * 100, 1),
-                "recall":    round(global_r  * 100, 1),
-                "f1_score":  round(global_f1 * 100, 1),
+                "precision": round(global_p * 100, 1),
+                "recall": round(global_r * 100, 1),
+                "f1_score": round(global_f1 * 100, 1),
             },
             "methodology": "Annotations manuelles sur vidéos de test (cam1, video1)",
         }
@@ -277,18 +279,18 @@ class AnalyticsEngine:
 
         return {
             "analysis_id": analysis_id,
-            "video_title":   vid["title"] if vid else "Inconnu",
-            "status":        a.get("status"),
-            "falls_detected":    a.get("falls_detected", 0),
-            "crowds_detected":   a.get("crowds_detected", 0),
+            "video_title": vid["title"] if vid else "Inconnu",
+            "status": a.get("status"),
+            "falls_detected": a.get("falls_detected", 0),
+            "crowds_detected": a.get("crowds_detected", 0),
             "abandoned_objects": a.get("abandoned_objects", 0),
-            "total_alerts":      len(df),
-            "by_type":  df["event_type"].value_counts().to_dict(),
-            "by_risk":  df["risk_level"].value_counts().to_dict(),
+            "total_alerts": len(df),
+            "by_type": df["event_type"].value_counts().to_dict(),
+            "by_risk": df["risk_level"].value_counts().to_dict(),
             "timeline": timeline,
             "avg_time_between_alerts": avg_gap,
             "processing_time": a.get("processing_time", 0),
-            "average_fps":     a.get("average_fps", 0),
+            "average_fps": a.get("average_fps", 0),
         }
 
     def close(self):

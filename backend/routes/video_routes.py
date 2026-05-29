@@ -1,9 +1,8 @@
 """Routes de gestion des vidéos."""
 
 from flask import Blueprint, request, jsonify
-from ..services.auth_service import token_required, admin_required
+from ..services.auth_service import token_required
 from ..services.video_service import VideoService
-from ..models.video import Video
 
 video_bp = Blueprint('video', __name__, url_prefix='/api/videos')
 

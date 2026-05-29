@@ -14,22 +14,22 @@ from bson.objectid import ObjectId
 
 log = logging.getLogger(__name__)
 
-BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CAPTURES_DIR = os.path.join(BASE_DIR, 'captures')
 os.makedirs(CAPTURES_DIR, exist_ok=True)
 
 # ── Seuils calibrés ─────────────────────────────────────────────────────
-FALL_RATIO_THRESHOLD  = 0.65   # h/w < 0.65 → personne tombée (evite faux positifs angle defavorable)
-CROWD_MIN_PERSONS     = 5      # 5+ personnes proches = attroupement
-CROWD_PROXIMITY_PX    = 200
-ABANDONED_MOVE_PX     = 50     # mouvement max (px) pour "immobile"
-ABANDONED_MIN_FRAMES  = 22     # frames traitées immobiles avant alerte
-CONFIDENCE_MIN        = 0.25
-FRAME_SKIP            = 3
+FALL_RATIO_THRESHOLD = 0.65   # h/w < 0.65 → personne tombée (evite faux positifs angle defavorable)
+CROWD_MIN_PERSONS = 5      # 5+ personnes proches = attroupement
+CROWD_PROXIMITY_PX = 200
+ABANDONED_MOVE_PX = 50     # mouvement max (px) pour "immobile"
+ABANDONED_MIN_FRAMES = 22     # frames traitées immobiles avant alerte
+CONFIDENCE_MIN = 0.25
+FRAME_SKIP = 3
 
 # Cooldown en FRAMES RÉELLES entre deux alertes du même type
-FALL_COOLDOWN      = 300   # ~10s @ 30fps — evite double detection meme chute
-CROWD_COOLDOWN     = 90
+FALL_COOLDOWN = 300   # ~10s @ 30fps — evite double detection meme chute
+CROWD_COOLDOWN = 90
 ABANDONED_COOLDOWN = 900   # ~30s @ 30fps — prevents re-alerting same drifting object
 
 # Objets PORTABLES uniquement (pas les meubles/écrans fixes)
@@ -44,26 +44,26 @@ OBJECT_CLASSES = {
 }
 
 COLORS = {
-    'fall':      (0,  0, 220),   # rouge
-    'crowding':  (0, 140, 255),  # orange
-    'abandoned': (0, 200,  50),  # vert
+    'fall': (0, 0, 220),   # rouge
+    'crowding': (0, 140, 255),  # orange
+    'abandoned': (0, 200, 50),  # vert
 }
 LABELS_FR = {
-    'fall':      'CHUTE DETECTEE',
-    'crowding':  'ATTROUPEMENT',
+    'fall': 'CHUTE DETECTEE',
+    'crowding': 'ATTROUPEMENT',
     'abandoned': 'OBJET ABANDONNE',
 }
 
 
 def _dist(c1, c2):
-    return ((c1[0]-c2[0])**2 + (c1[1]-c2[1])**2) ** 0.5
+    return ((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2) ** 0.5
 
 
 def _save_capture(frame, analysis_id, frame_id, event_type, bboxes=None, centers=None):
     """Sauvegarde une capture JPEG avec bboxes/cercles annotés."""
     try:
         color = COLORS.get(event_type, (100, 100, 100))
-        img   = frame.copy()
+        img = frame.copy()
 
         # Dessiner les bboxes / cercles sur les objets détectés
         if bboxes:
@@ -72,15 +72,15 @@ def _save_capture(frame, analysis_id, frame_id, event_type, bboxes=None, centers
                 # Rectangles épais + coins accentués
                 cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
                 # Coins marqués
-                L = max(20, (x2-x1)//5)
-                for px, py, dx, dy in [(x1,y1,1,1),(x2,y1,-1,1),(x1,y2,1,-1),(x2,y2,-1,-1)]:
-                    cv2.line(img, (px,py), (px+dx*L,py), color, 4)
-                    cv2.line(img, (px,py), (px,py+dy*L), color, 4)
+                L = max(20, (x2 - x1) // 5)
+                for px, py, dx, dy in [(x1, y1, 1, 1), (x2, y1, -1, 1), (x1, y2, 1, -1), (x2, y2, -1, -1)]:
+                    cv2.line(img, (px, py), (px + dx * L, py), color, 4)
+                    cv2.line(img, (px, py), (px, py + dy * L), color, 4)
 
         if centers:
             for cx, cy in centers:
                 cv2.circle(img, (int(cx), int(cy)), 18, color, 3)
-                cv2.circle(img, (int(cx), int(cy)), 5,  color, -1)
+                cv2.circle(img, (int(cx), int(cy)), 5, color, -1)
 
         # Bandeau info en haut
         h, w = img.shape[:2]
@@ -88,9 +88,9 @@ def _save_capture(frame, analysis_id, frame_id, event_type, bboxes=None, centers
         cv2.rectangle(overlay, (0, 0), (w, 40), color, -1)
         cv2.addWeighted(overlay, 0.65, img, 0.35, 0, img)
         cv2.putText(img, LABELS_FR.get(event_type, event_type.upper()),
-                    (10, 27), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255), 2)
+                    (10, 27), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
         cv2.putText(img, f"frame {frame_id}",
-                    (w-140, 27), cv2.FONT_HERSHEY_SIMPLEX, 0.60, (255,255,255), 1)
+                    (w - 140, 27), cv2.FONT_HERSHEY_SIMPLEX, 0.60, (255, 255, 255), 1)
 
         filename = f"{analysis_id}_{frame_id}_{event_type}.jpg"
         cv2.imwrite(os.path.join(CAPTURES_DIR, filename), img,
@@ -105,8 +105,8 @@ def run_analysis(analysis_id: str, video_path: str,
                  mongo_uri: str = 'mongodb://localhost:27017/'):
 
     client = MongoClient(mongo_uri)
-    db     = client['surveillance_db']
-    aid    = ObjectId(analysis_id)
+    db = client['surveillance_db']
+    aid = ObjectId(analysis_id)
 
     def update(fields):
         db.analysis.update_one(
@@ -126,8 +126,8 @@ def run_analysis(analysis_id: str, video_path: str,
             return
 
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 1
-        fps          = cap.get(cv2.CAP_PROP_FPS) or 25.0
-        t_start      = time.time()
+        fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+        t_start = time.time()
 
         falls = crowds = abandoned_count = 0
         timeline = []
@@ -138,7 +138,7 @@ def run_analysis(analysis_id: str, video_path: str,
         # Tracking objets portables : key → {immobile_frames, last_cx, last_cy, alerted, bbox}
         obj_track = {}
 
-        frame_id     = 0
+        frame_id = 0
         last_progress = -1
 
         while True:
@@ -171,8 +171,8 @@ def run_analysis(analysis_id: str, video_path: str,
             for box in results.boxes:
                 cls = int(box.cls[0])
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
-                cx, cy = (x1+x2)//2, (y1+y2)//2
-                det = {'bbox': [x1,y1,x2,y2], 'center': [cx,cy], 'cls': cls}
+                cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+                det = {'bbox': [x1, y1, x2, y2], 'center': [cx, cy], 'cls': cls}
                 if cls == 0:
                     persons.append(det)
                 elif cls in OBJECT_CLASSES:
@@ -185,8 +185,8 @@ def run_analysis(analysis_id: str, video_path: str,
             if (frame_id - last_alert['fall']) > FALL_COOLDOWN:
                 fallen = []
                 for p in persons:
-                    x1,y1,x2,y2 = p['bbox']
-                    ratio = max(y2-y1, 1) / max(x2-x1, 1)
+                    x1, y1, x2, y2 = p['bbox']
+                    ratio = max(y2 - y1, 1) / max(x2 - x1, 1)
                     if ratio < FALL_RATIO_THRESHOLD:
                         fallen.append(p)
                 if fallen:
@@ -227,9 +227,9 @@ def run_analysis(analysis_id: str, video_path: str,
 
             for obj in objects:
                 cx, cy = obj['center']
-                cls    = obj['cls']
+                cls = obj['cls']
                 # Grille 100px pour stabilité
-                key = f"{cls}_{cx//100}_{cy//100}"
+                key = f"{cls}_{cx // 100}_{cy // 100}"
                 seen_keys.add(key)
 
                 if key not in obj_track:
@@ -240,8 +240,8 @@ def run_analysis(analysis_id: str, video_path: str,
                         'bbox': obj['bbox'],
                     }
 
-                trk  = obj_track[key]
-                move = _dist([cx,cy], [trk['last_cx'], trk['last_cy']])
+                trk = obj_track[key]
+                move = _dist([cx, cy], [trk['last_cx'], trk['last_cy']])
 
                 if move <= ABANDONED_MOVE_PX:
                     trk['immobile_frames'] += 1
@@ -290,31 +290,31 @@ def run_analysis(analysis_id: str, video_path: str,
                     abandoned_count += 1
 
                 db.alert.insert_one({
-                    'analysis':   aid,
+                    'analysis': aid,
                     'event_type': ev_type,
                     'risk_level': risk,
-                    'frame_id':   frame_id,
-                    'timestamp':  ts,
-                    'status':     'active',
-                    'capture':    capture_file,
+                    'frame_id': frame_id,
+                    'timestamp': ts,
+                    'status': 'active',
+                    'capture': capture_file,
                     'created_at': datetime.now(timezone.utc),
                 })
                 timeline.append({'event_type': ev_type, 'frame_id': frame_id,
-                                  'timestamp': ts})
+                                 'timestamp': ts})
 
         cap.release()
         proc_time = round(time.time() - t_start, 2)
 
         update({
-            'status':            'completed',
-            'progress':          100,
-            'falls_detected':    falls,
-            'crowds_detected':   crowds,
+            'status': 'completed',
+            'progress': 100,
+            'falls_detected': falls,
+            'crowds_detected': crowds,
             'abandoned_objects': abandoned_count,
-            'total_events':      falls + crowds + abandoned_count,
-            'events_timeline':   timeline[:100],
-            'processing_time':   proc_time,
-            'average_fps':       round(total_frames / max(proc_time, 1), 1),
+            'total_events': falls + crowds + abandoned_count,
+            'events_timeline': timeline[:100],
+            'processing_time': proc_time,
+            'average_fps': round(total_frames / max(proc_time, 1), 1),
         })
         log.info(f"[Worker] {analysis_id} OK — chutes={falls} foules={crowds} objets={abandoned_count}")
 

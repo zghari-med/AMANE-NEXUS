@@ -2,10 +2,8 @@
 
 import json
 import csv
-import os
 from datetime import datetime
 from io import StringIO, BytesIO
-from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
@@ -48,7 +46,7 @@ class ExportService:
             csv_content = output.getvalue()
             return {
                 'content': csv_content,
-                'filename': f"analysis_{analysis.id}_export.csv",
+                'filename': "analysis_{analysis.id}_export.csv",
                 'code': 200
             }
         except Analysis.DoesNotExist:
@@ -71,7 +69,7 @@ class ExportService:
             json_content = json.dumps(export_data, indent=2, default=str)
             return {
                 'content': json_content,
-                'filename': f"analysis_{analysis.id}_export.json",
+                'filename': "analysis_{analysis.id}_export.json",
                 'code': 200
             }
         except Analysis.DoesNotExist:
@@ -103,11 +101,11 @@ class ExportService:
                 'CustomTitle',
                 parent=styles['Heading1'],
                 fontSize=24,
-                textColor=colors.HexColor('#1e40af'),
+                textColor=colors.HexColor('#1e40a'),
                 spaceAfter=30,
             )
             title = Paragraph(
-                f"Rapport d'Analyse Vidéo",
+                "Rapport d'Analyse Vidéo",
                 title_style
             )
             elements.append(title)
@@ -117,13 +115,13 @@ class ExportService:
                 ['Vidéo', analysis.video.title],
                 ['Statut', analysis.status],
                 ['Date d\'analyse', analysis.created_at.strftime('%d/%m/%Y %H:%M')],
-                ['Durée du traitement', f"{analysis.processing_time:.2f}s" if analysis.processing_time else 'N/A'],
-                ['FPS moyen', f"{analysis.average_fps:.1f}" if analysis.average_fps else 'N/A'],
+                ['Durée du traitement', "{analysis.processing_time:.2f}s" if analysis.processing_time else 'N/A'],
+                ['FPS moyen', "{analysis.average_fps:.1f}" if analysis.average_fps else 'N/A'],
             ]
 
             info_table = Table(info_data, colWidths=[150, 250])
             info_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#e0e7ff')),
+                ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#e0e7f')),
                 ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                 ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
@@ -148,7 +146,7 @@ class ExportService:
 
             summary_table = Table(summary_data, colWidths=[250, 150])
             summary_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40a')),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -179,7 +177,7 @@ class ExportService:
 
                 alerts_table = Table(alerts_data, colWidths=[100, 120, 100, 100])
                 alerts_table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40a')),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                     ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -197,10 +195,10 @@ class ExportService:
 
             return {
                 'content': pdf_content,
-                'filename': f"analysis_{analysis.id}_report.pdf",
+                'filename': "analysis_{analysis.id}_report.pd",
                 'code': 200
             }
         except Analysis.DoesNotExist:
             return {'error': 'Analysis not found', 'code': 404}
-        except Exception as e:
-            return {'error': f'PDF generation failed: {str(e)}', 'code': 500}
+        except Exception:
+            return {'error': 'PDF generation failed: {str(e)}', 'code': 500}
