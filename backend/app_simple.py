@@ -53,7 +53,7 @@ CORS(app)
 
 # MongoDB
 MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
-MONGO_DB = os.environ.get('MONGO_DB', 'surveillance_db')
+MONGO_DB  = os.environ.get('MONGO_DB',  'surveillance_db')
 client = MongoClient(MONGO_URI)
 db = client[MONGO_DB]
 
@@ -62,8 +62,6 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'}
 
 # Decorateur pour JWT
-
-
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -83,37 +81,31 @@ def token_required(f):
     return decorated
 
 # ── Activity Log ──────────────────────────────────────────────────────────────
-
-
 def log_activity(action, details='', user_id=None, username='system', status='success'):
     """Enregistre une activité dans la collection activity_log."""
     try:
         db.activity_log.insert_one({
-            'user_id': ObjectId(user_id) if user_id else None,
-            'username': username,
-            'action': action,
-            'details': details,
-            'ip': request.remote_addr if request else '—',
-            'method': request.method if request else '—',
-            'endpoint': request.path if request else '—',
-            'status': status,
+            'user_id':   ObjectId(user_id) if user_id else None,
+            'username':  username,
+            'action':    action,
+            'details':   details,
+            'ip':        request.remote_addr if request else '—',
+            'method':    request.method if request else '—',
+            'endpoint':  request.path if request else '—',
+            'status':    status,
             'created_at': datetime.utcnow(),
         })
     except Exception as e:
         log.warning(f"log_activity failed: {e}")
 
 # Routes
-
-
 @app.route('/api/health', methods=['GET'])
 def health():
     return jsonify({'status': 'healthy', 'service': 'Surveillance Platform API', 'version': '1.0.0'}), 200
 
-
 @app.route('/api', methods=['GET'])
 def api_info():
     return jsonify({'name': 'Surveillance Platform API', 'version': '1.0.0'}), 200
-
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
@@ -147,7 +139,6 @@ def login():
         }
     }), 200
 
-
 @app.route('/api/auth/me', methods=['GET'])
 @token_required
 def get_me():
@@ -155,7 +146,6 @@ def get_me():
     if not user:
         return jsonify({'error': 'User not found'}), 404
     return jsonify({'user': {'email': user['email'], 'username': user['username'], 'role': user['role']}}), 200
-
 
 @app.route('/api/auth/logout', methods=['POST'])
 @token_required
@@ -167,8 +157,6 @@ def logout():
     return jsonify({'message': 'Déconnexion réussie'}), 200
 
 # VIDEO ENDPOINTS
-
-
 @app.route('/api/videos/upload', methods=['POST'])
 @token_required
 def upload_video():
@@ -221,7 +209,7 @@ def upload_video():
     }
     result = db.video.insert_one(video_doc)
     u = db.user.find_one({'_id': ObjectId(request.user_id)})
-    log_activity('UPLOAD_VIDEO', f"Vidéo uploadée: {title} ({duration:.1f}s)", request.user_id, u.get('username', '?') if u else '?')
+    log_activity('UPLOAD_VIDEO', f"Vidéo uploadée: {title} ({duration:.1f}s)", request.user_id, u.get('username','?') if u else '?')
 
     return jsonify({
         'message': 'Video uploaded successfully',
@@ -231,7 +219,6 @@ def upload_video():
             'duration': duration
         }
     }), 201
-
 
 @app.route('/api/videos', methods=['GET'])
 @token_required
@@ -249,7 +236,6 @@ def get_videos():
         } for v in videos]
     }), 200
 
-
 @app.route('/api/videos/<video_id>', methods=['DELETE'])
 @token_required
 def delete_video(video_id):
@@ -266,15 +252,13 @@ def delete_video(video_id):
 
         db.video.delete_one({'_id': ObjectId(video_id)})
         u = db.user.find_one({'_id': ObjectId(request.user_id)})
-        log_activity('DELETE_VIDEO', f"Vidéo supprimée: {vid.get('title', '')}", request.user_id, u.get('username', '?') if u else '?')
+        log_activity('DELETE_VIDEO', f"Vidéo supprimée: {vid.get('title','')}", request.user_id, u.get('username','?') if u else '?')
         return jsonify({'message': 'Video deleted'}), 200
     except Exception as e:
         log.error(f"delete_video error: {e}")
         return jsonify({'error': 'Erreur lors de la suppression de la vidéo'}), 500
 
 # ANALYSIS ENDPOINTS
-
-
 @app.route('/api/analyses/create', methods=['POST'])
 @token_required
 def create_analysis():
@@ -322,14 +306,13 @@ def create_analysis():
             log.warning('Worker non disponible ou fichier introuvable')
 
         u = db.user.find_one({'_id': ObjectId(request.user_id)})
-        log_activity('CREATE_ANALYSIS', f"Analyse lancée sur: {vid.get('title', '')}", request.user_id, u.get('username', '?') if u else '?')
+        log_activity('CREATE_ANALYSIS', f"Analyse lancée sur: {vid.get('title','')}", request.user_id, u.get('username','?') if u else '?')
         return jsonify({
             'message': 'Analysis created',
             'analysis_id': analysis_id
         }), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/api/analyses', methods=['GET'])
 @token_required
@@ -349,7 +332,6 @@ def get_analyses():
         } for a in analyses]
     }), 200
 
-
 @app.route('/api/analyses/statistics', methods=['GET'])
 @token_required
 def get_statistics():
@@ -364,8 +346,8 @@ def get_statistics():
     analyses = list(db.analysis.find(date_filter).sort('created_at', -1))
 
     completed = [a for a in analyses if a.get('status') == 'completed']
-    total_falls = sum(a.get('falls_detected', 0) for a in completed)
-    total_crowds = sum(a.get('crowds_detected', 0) for a in completed)
+    total_falls     = sum(a.get('falls_detected', 0) for a in completed)
+    total_crowds    = sum(a.get('crowds_detected', 0) for a in completed)
     total_abandoned = sum(a.get('abandoned_objects', 0) for a in completed)
 
     # EVERYONE sees ALL alerts (filtered by date if requested)
@@ -373,8 +355,8 @@ def get_statistics():
 
     # Breakdown by type
     base_q = dict(date_filter) if date_filter else {}
-    falls_alerts = db.alert.count_documents({**base_q, 'event_type': 'fall'})
-    crowding_alerts = db.alert.count_documents({**base_q, 'event_type': 'crowding'})
+    falls_alerts     = db.alert.count_documents({**base_q, 'event_type': 'fall'})
+    crowding_alerts  = db.alert.count_documents({**base_q, 'event_type': 'crowding'})
     abandoned_alerts = db.alert.count_documents({**base_q, 'event_type': 'abandoned'})
 
     # EVERYONE sees ALL videos
@@ -387,18 +369,18 @@ def get_statistics():
     recent_raw = list(db.alert.find({}).sort('created_at', -1).limit(4))
     recent_alerts = []
     for al in recent_raw:
-        analysis_ref = alog_item.get('analysis')
+        analysis_ref = al.get('analysis')
         a_doc = db.analysis.find_one({'_id': analysis_ref}) if analysis_ref else None
         v_doc = db.video.find_one({'_id': a_doc.get('video')}) if a_doc and a_doc.get('video') else None
         recent_alerts.append({
-            '_id': str(alog_item['_id']),
-            'event_type': alog_item.get('event_type', ''),
-            'risk_level': alog_item.get('risk_level', 'low'),
-            'timestamp': alog_item.get('timestamp', 0),
-            'frame_id': alog_item.get('frame_id', 0),
-            'capture': alog_item.get('capture'),
+            '_id':        str(al['_id']),
+            'event_type': al.get('event_type', ''),
+            'risk_level': al.get('risk_level', 'low'),
+            'timestamp':  al.get('timestamp', 0),
+            'frame_id':   al.get('frame_id', 0),
+            'capture':    al.get('capture'),
             'video_title': v_doc['title'] if v_doc else 'Inconnu',
-            'created_at': str(alog_item.get('created_at', '')),
+            'created_at': str(al.get('created_at', '')),
         })
 
     # Chart data — grouped by date (no duplicate dates)
@@ -418,9 +400,9 @@ def get_statistics():
             continue
         if label not in date_map:
             date_map[label] = {'chutes': 0, 'attroupements': 0, 'objets': 0}
-        date_map[label]['chutes'] += a.get('falls_detected', 0)
+        date_map[label]['chutes']        += a.get('falls_detected', 0)
         date_map[label]['attroupements'] += a.get('crowds_detected', 0)
-        date_map[label]['objets'] += a.get('abandoned_objects', 0)
+        date_map[label]['objets']        += a.get('abandoned_objects', 0)
     # Keep last 14 days
     chart_data = [
         {'name': d, **v}
@@ -428,29 +410,27 @@ def get_statistics():
     ]
 
     result = {
-        'falls_detected': total_falls,
-        'crowds_detected': total_crowds,
-        'abandoned_objects': total_abandoned,
-        'total_events': total_falls + total_crowds + total_abandoned,
-        'total_analyses': len(analyses),
+        'falls_detected':     total_falls,
+        'crowds_detected':    total_crowds,
+        'abandoned_objects':  total_abandoned,
+        'total_events':       total_falls + total_crowds + total_abandoned,
+        'total_analyses':     len(analyses),
         'completed_analyses': len(completed),
-        'total_alerts': total_alerts,
-        'total_videos': total_videos,
+        'total_alerts':       total_alerts,
+        'total_videos':       total_videos,
         'alerts_by_type': {
-            'fall': falls_alerts,
-            'crowding': crowding_alerts,
+            'fall':      falls_alerts,
+            'crowding':  crowding_alerts,
             'abandoned': abandoned_alerts,
         },
         'recent_alerts': recent_alerts,
-        'chart_data': chart_data,
+        'chart_data':    chart_data,
     }
     if is_admin:
         result['total_users'] = total_users
     return jsonify(result), 200
 
 # USER MANAGEMENT (admin only)
-
-
 def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -470,7 +450,6 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
-
 @app.route('/api/users', methods=['GET'])
 @admin_required
 def list_users():
@@ -484,15 +463,14 @@ def list_users():
         'created_at': str(u.get('created_at', '')),
     } for u in users]}), 200
 
-
 @app.route('/api/users', methods=['POST'])
 @admin_required
 def create_user():
     data = request.json
-    email = (data.get('email') or '').strip().lower()
+    email    = (data.get('email') or '').strip().lower()
     username = (data.get('username') or '').strip()
     password = data.get('password') or ''
-    role = data.get('role', 'user')
+    role     = data.get('role', 'user')
     full_name = data.get('full_name', '')
 
     if not email or not username or not password:
@@ -515,9 +493,8 @@ def create_user():
         'updated_at': datetime.utcnow(),
     })
     admin_u = db.user.find_one({'_id': ObjectId(request.user_id)})
-    log_activity('CREATE_USER', f"Nouvel utilisateur: {username} ({role})", request.user_id, admin_u.get('username', '?') if admin_u else '?')
+    log_activity('CREATE_USER', f"Nouvel utilisateur: {username} ({role})", request.user_id, admin_u.get('username','?') if admin_u else '?')
     return jsonify({'message': 'Utilisateur créé', 'user_id': str(result.inserted_id)}), 201
-
 
 @app.route('/api/users/<user_id>', methods=['DELETE'])
 @admin_required
@@ -528,9 +505,8 @@ def delete_user(user_id):
     if r.deleted_count == 0:
         return jsonify({'error': 'Utilisateur non trouvé'}), 404
     admin_u = db.user.find_one({'_id': ObjectId(request.user_id)})
-    log_activity('DELETE_USER', f"Utilisateur supprimé: {user_id}", request.user_id, admin_u.get('username', '?') if admin_u else '?')
+    log_activity('DELETE_USER', f"Utilisateur supprimé: {user_id}", request.user_id, admin_u.get('username','?') if admin_u else '?')
     return jsonify({'message': 'Utilisateur supprimé'}), 200
-
 
 @app.route('/api/users/<user_id>', methods=['PUT'])
 @admin_required
@@ -546,7 +522,6 @@ def update_user(user_id):
     db.user.update_one({'_id': ObjectId(user_id)}, {'$set': upd})
     return jsonify({'message': 'Utilisateur mis à jour'}), 200
 
-
 @app.route('/api/users/<user_id>/password', methods=['PUT'])
 @token_required
 def change_password(user_id):
@@ -561,12 +536,11 @@ def change_password(user_id):
     db.user.update_one({'_id': ObjectId(user_id)}, {'$set': {'password': hashed}})
     actor = db.user.find_one({'_id': ObjectId(request.user_id)})
     target = db.user.find_one({'_id': ObjectId(user_id)})
-    log_activity('CHANGE_PASSWORD', f"Mot de passe modifié pour: {target.get('username', '?') if target else user_id}",
-                 request.user_id, actor.get('username', '?') if actor else '?')
+    log_activity('CHANGE_PASSWORD', f"Mot de passe modifié pour: {target.get('username','?') if target else user_id}",
+                 request.user_id, actor.get('username','?') if actor else '?')
     return jsonify({'message': 'Mot de passe modifié'}), 200
 
 # ── Cameras (IP / RTSP / HTTP) ────────────────────────────────────────────────
-
 
 @app.route('/api/cameras', methods=['GET'])
 @token_required
@@ -578,13 +552,12 @@ def list_cameras():
         c.pop('created_by', None)  # Remove ObjectId field that can't be JSON serialized
     return jsonify({'cameras': cameras}), 200
 
-
 @app.route('/api/cameras', methods=['POST'])
 @token_required
 def create_camera():
     data = request.json or {}
-    name = data.get('name', '').strip()
-    url = data.get('url', '').strip()
+    name     = data.get('name', '').strip()
+    url      = data.get('url', '').strip()
     location = data.get('location', '').strip()
     cam_type = data.get('type', 'http')
     if not name or not url:
@@ -600,13 +573,11 @@ def create_camera():
     cam.pop('created_by', None)
     return jsonify({'camera': cam, 'camera_id': str(res.inserted_id), 'message': 'Caméra ajoutée'}), 201
 
-
 @app.route('/api/cameras/<cam_id>', methods=['DELETE'])
 @token_required
 def delete_camera(cam_id):
     db.camera.delete_one({'_id': ObjectId(cam_id)})
     return jsonify({'message': 'Caméra supprimée'}), 200
-
 
 @app.route('/api/captures/<filename>', methods=['GET'])
 def serve_capture(filename):
@@ -627,7 +598,6 @@ def serve_capture(filename):
         return jsonify({'error': 'Capture not found'}), 404
     return send_file(path, mimetype='image/jpeg')
 
-
 @app.route('/api/videos/<video_id>/file', methods=['GET'])
 @token_required
 def serve_video(video_id):
@@ -640,7 +610,6 @@ def serve_video(video_id):
         return send_file(vid['filepath'], mimetype='video/mp4', conditional=True)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/api/analyses/<analysis_id>', methods=['GET'])
 @token_required
@@ -667,27 +636,25 @@ def get_analysis(analysis_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/analyses/<analysis_id>/alerts', methods=['GET'])
 @token_required
 def get_analysis_alerts(analysis_id):
     try:
         alerts = list(db.alert.find({'analysis': ObjectId(analysis_id)}).sort('created_at', -1))
         return jsonify({'alerts': [{
-            '_id': str(alog_item['_id']),
-            'event_type': alog_item.get('event_type', ''),
-            'risk_level': alog_item.get('risk_level', 'low'),
-            'frame_id': alog_item.get('frame_id', 0),
-            'timestamp': alog_item.get('timestamp', 0),
-            'status': alog_item.get('status', 'active'),
-            'capture': alog_item.get('capture'),
-            'created_at': str(alog_item.get('created_at', ''))
+            '_id': str(al['_id']),
+            'event_type': al.get('event_type', ''),
+            'risk_level': al.get('risk_level', 'low'),
+            'frame_id': al.get('frame_id', 0),
+            'timestamp': al.get('timestamp', 0),
+            'status': al.get('status', 'active'),
+            'capture': al.get('capture'),
+            'created_at': str(al.get('created_at', ''))
         } for al in alerts]}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 # ── Analytics & Benchmarks routes ─────────────────────────────────────────
-
 
 @app.route('/api/analyses/statistics/<analysis_id>', methods=['GET'])
 @token_required
@@ -757,9 +724,9 @@ def metrics_export(analysis_id):
 @token_required
 def get_activity_logs():
     """Journal d'activité — admin: tout, user: son propre journal."""
-    page = int(request.args.get('page', 1))
+    page  = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 50))
-    skip = (page - 1) * limit
+    skip  = (page - 1) * limit
 
     if request.user_role == 'admin':
         query = {}
@@ -767,11 +734,11 @@ def get_activity_logs():
         query = {'user_id': ObjectId(request.user_id)}
 
     total = db.activity_log.count_documents(query)
-    logs = list(db.activity_log.find(query).sort('created_at', -1).skip(skip).limit(limit))
-    for log_item in logs:
-        log_item['_id'] = str(log_item['_id'])
-        log_item['user_id'] = str(log_item['user_id']) if log_item.get('user_id') else None
-        log_item['created_at'] = log_item['created_at'].strftime('%Y-%m-%dT%H:%M:%S') if hasattr(log_item.get('created_at'), 'strftime') else str(log_item.get('created_at', ''))
+    logs  = list(db.activity_log.find(query).sort('created_at', -1).skip(skip).limit(limit))
+    for l in logs:
+        l['_id'] = str(l['_id'])
+        l['user_id'] = str(l['user_id']) if l.get('user_id') else None
+        l['created_at'] = l['created_at'].strftime('%Y-%m-%dT%H:%M:%S') if hasattr(l.get('created_at'), 'strftime') else str(l.get('created_at', ''))
 
     return jsonify({'logs': logs, 'total': total, 'page': page, 'limit': limit}), 200
 
@@ -786,16 +753,16 @@ def export_alerts():
     raw = list(db.alert.find({}).sort('created_at', -1).limit(500))
     result = []
     for al in raw:
-        a_doc = db.analysis.find_one({'_id': alog_item.get('analysis')}, {'video': 1})
+        a_doc = db.analysis.find_one({'_id': al.get('analysis')}, {'video': 1})
         v_doc = db.video.find_one({'_id': a_doc.get('video')}, {'title': 1}) if a_doc else None
-        created = alog_item.get('created_at')
+        created = al.get('created_at')
         result.append({
-            '_id': str(alog_item['_id']),
-            'event_type': alog_item.get('event_type', ''),
-            'risk_level': alog_item.get('risk_level', 'low'),
-            'frame_id': alog_item.get('frame_id', 0),
-            'timestamp': round(float(alog_item.get('timestamp', 0)), 2),
-            'capture': alog_item.get('capture'),
+            '_id':        str(al['_id']),
+            'event_type': al.get('event_type', ''),
+            'risk_level': al.get('risk_level', 'low'),
+            'frame_id':   al.get('frame_id', 0),
+            'timestamp':  round(float(al.get('timestamp', 0)), 2),
+            'capture':    al.get('capture'),
             'video_title': v_doc['title'] if v_doc else 'Inconnu',
             'created_at': created.strftime('%Y-%m-%dT%H:%M:%S') if hasattr(created, 'strftime') else str(created or ''),
         })
@@ -807,7 +774,6 @@ def export_alerts():
 def _extract_youtube_id(url):
     m = re.search(r'(?:v=|youtu\.be/|embed/)([A-Za-z0-9_-]{11})', url)
     return m.group(1) if m else None
-
 
 def _get_live_stream_url(cam):
     """Retourne (stream_url, stream_type) en résolvant YouTube si nécessaire."""
@@ -851,15 +817,15 @@ def _draw_annotation(frame, event_type, box=None):
 
 def _run_live_analysis(cam_id, analysis_id, user_id):
     """Thread principal d'analyse en direct — OpenCV + YOLOv8."""
-    FRAME_SKIP = 3
-    FALL_COOLDOWN = 300   # frames
-    CROWD_COOLDOWN = 90
-    ABANDON_COOLDOWN = 900
-    CROWD_MIN = 5
-    FALL_RATIO = 0.65
-    STATIONARY_THR = 22
-    GRID_SZ = 100
-    CONF = 0.35
+    FRAME_SKIP        = 3
+    FALL_COOLDOWN     = 300   # frames
+    CROWD_COOLDOWN    = 90
+    ABANDON_COOLDOWN  = 900
+    CROWD_MIN         = 5
+    FALL_RATIO        = 0.65
+    STATIONARY_THR    = 22
+    GRID_SZ           = 100
+    CONF              = 0.35
 
     log.info(f"[LIVE] Démarrage analyse caméra {cam_id}")
     try:
@@ -900,12 +866,12 @@ def _run_live_analysis(cam_id, analysis_id, user_id):
         captures_dir = os.path.join(BASE_DIR, 'captures')
         os.makedirs(captures_dir, exist_ok=True)
 
-        frame_count = 0
-        last_fall = {}   # person_id -> frame
+        frame_count      = 0
+        last_fall        = {}   # person_id -> frame
         last_crowd_frame = -CROWD_COOLDOWN
-        last_abandon = {}   # cell -> frame
-        object_grid = {}   # cell -> stationary_count
-        total_events = 0
+        last_abandon     = {}   # cell -> frame
+        object_grid      = {}   # cell -> stationary_count
+        total_events     = 0
 
         while live_analyses.get(cam_id, {}).get('running', False):
             ret, frame = cap.read()
@@ -926,7 +892,7 @@ def _run_live_analysis(cam_id, analysis_id, user_id):
                     cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
                     w_b, h_b = x2 - x1, y2 - y1
                     persons.append({'box': (x1, y1, x2, y2), 'cx': cx, 'cy': cy,
-                                    'w': w_b, 'h': h_b, 'pid': f'{cx // 20}_{cy // 20}'})
+                                    'w': w_b, 'h': h_b, 'pid': f'{cx//20}_{cy//20}'})
 
             events = []
 
@@ -935,7 +901,7 @@ def _run_live_analysis(cam_id, analysis_id, user_id):
                 ratio = p['h'] / (p['w'] + 1e-5)
                 if ratio < FALL_RATIO:
                     pid = p['pid']
-                    if frame_count - last_fallog_item.get(pid, -FALL_COOLDOWN) >= FALL_COOLDOWN:
+                    if frame_count - last_fall.get(pid, -FALL_COOLDOWN) >= FALL_COOLDOWN:
                         last_fall[pid] = frame_count
                         events.append({'event_type': 'fall', 'risk_level': 'high', 'box': p['box']})
 
@@ -966,21 +932,21 @@ def _run_live_analysis(cam_id, analysis_id, user_id):
             for ev in events:
                 ann = _draw_annotation(frame.copy(), ev['event_type'], ev.get('box'))
                 ts_str = datetime.utcnow().strftime('%Y%m%d_%H%M%S_%f')
-                fname = f"live_{cam_id}_{ts_str}.jpg"
+                fname  = f"live_{cam_id}_{ts_str}.jpg"
                 cv2.imwrite(os.path.join(captures_dir, fname), ann,
                             [cv2.IMWRITE_JPEG_QUALITY, 82])
 
                 db.live_alert.insert_one({
                     'live_analysis_id': ObjectId(analysis_id),
-                    'camera_id': ObjectId(cam_id),
+                    'camera_id':   ObjectId(cam_id),
                     'camera_name': cam.get('name', ''),
-                    'event_type': ev['event_type'],
-                    'risk_level': ev['risk_level'],
-                    'frame_id': frame_count,
-                    'timestamp': round(frame_count / 25.0, 1),
-                    'capture': fname,
-                    'created_at': datetime.utcnow(),
-                    'user_id': ObjectId(user_id),
+                    'event_type':  ev['event_type'],
+                    'risk_level':  ev['risk_level'],
+                    'frame_id':    frame_count,
+                    'timestamp':   round(frame_count / 25.0, 1),
+                    'capture':     fname,
+                    'created_at':  datetime.utcnow(),
+                    'user_id':     ObjectId(user_id),
                 })
                 total_events += 1
 
@@ -1057,7 +1023,7 @@ def stop_live_analysis(cam_id):
 def get_live_status(cam_id):
     """Statut + alertes récentes de l'analyse en direct."""
     running_info = live_analyses.get(cam_id)
-    analysis_id = (running_info or {}).get('analysis_id')
+    analysis_id  = (running_info or {}).get('analysis_id')
 
     # Cherche aussi la dernière analyse (même stoppée)
     last_analysis = db.live_analysis.find_one(
@@ -1080,25 +1046,25 @@ def get_live_status(cam_id):
 
     alerts_raw = list(db.live_alert.find(alert_query).sort('created_at', -1).limit(20))
     alerts = [{
-        '_id': str(a['_id']),
+        '_id':        str(a['_id']),
         'event_type': a.get('event_type', ''),
         'risk_level': a.get('risk_level', 'low'),
-        'frame_id': a.get('frame_id', 0),
-        'timestamp': a.get('timestamp', 0),
-        'capture': a.get('capture'),
+        'frame_id':   a.get('frame_id', 0),
+        'timestamp':  a.get('timestamp', 0),
+        'capture':    a.get('capture'),
         'created_at': a['created_at'].strftime('%Y-%m-%dT%H:%M:%S') if hasattr(a.get('created_at'), 'strftime') else str(a.get('created_at', '')),
     } for a in alerts_raw]
 
     counters = last_analysis or {}
     return jsonify({
-        'running': bool(running_info and running_info.get('running')),
+        'running':     bool(running_info and running_info.get('running')),
         'analysis_id': analysis_id,
-        'status': counters.get('status', 'idle'),
-        'total_events': counters.get('total_events', 0),
-        'falls_detected': counters.get('falls_detected', 0),
+        'status':      counters.get('status', 'idle'),
+        'total_events':    counters.get('total_events', 0),
+        'falls_detected':  counters.get('falls_detected', 0),
         'crowds_detected': counters.get('crowds_detected', 0),
         'abandoned_objects': counters.get('abandoned_objects', 0),
-        'frames_processed': counters.get('frames_processed', 0),
+        'frames_processed':  counters.get('frames_processed', 0),
         'alerts': alerts,
     }), 200
 
@@ -1107,12 +1073,10 @@ def get_live_status(cam_id):
 def not_found(error):
     return jsonify({'error': 'Not found'}), 404
 
-
 @app.errorhandler(500)
 def server_error(error):
     log.error(f"Server error: {error}")
     return jsonify({'error': 'Internal server error'}), 500
-
 
 def seed_demo_camera():
     """Insérer une caméra de rue de démonstration si aucune n'existe."""
@@ -1126,7 +1090,6 @@ def seed_demo_camera():
             'demo': True,
         })
         log.info("Caméra de démonstration insérée.")
-
 
 if __name__ == '__main__':
     log.info("Demarrage de l'API Flask...")
