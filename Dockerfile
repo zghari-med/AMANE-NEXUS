@@ -12,7 +12,7 @@ WORKDIR /build/backend
 
 # Installer les dépendances système nécessaires
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc g++ libgl1-mesa-glx libglib2.0-0 libsm6 libxrender1 libxext6 \
+    gcc g++ libgl1 libglib2.0-0 libsm6 libxrender1 libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copier et installer les dépendances Python
@@ -46,7 +46,7 @@ LABEL description="Système de Surveillance Intelligente Multi-Agent"
 
 # Installer Nginx + dépendances système
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx supervisor libgl1-mesa-glx libglib2.0-0 libsm6 libxrender1 libxext6 \
+    nginx supervisor libgl1 libglib2.0-0 libsm6 libxrender1 libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
 # Créer l'utilisateur non-root
