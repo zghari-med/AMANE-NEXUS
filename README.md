@@ -10,7 +10,7 @@ Mohamed Z'GHARI
 [![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?logo=mongodb)](https://mongodb.com)
 [![YOLOv8](https://img.shields.io/badge/YOLOv8n-CPU-FF6B6B)](https://ultralytics.com)
 [![Docker](https://img.shields.io/badge/Docker-multi--stage-2496ED?logo=docker)](https://docker.com)
-[![Tests](https://img.shields.io/badge/Tests-58%2F58%20passed-brightgreen)](backend/tests/)
+[![Tests](https://img.shields.io/badge/Tests-60%2F60%20passed-brightgreen)](backend/tests/)
 [![License](https://img.shields.io/badge/License-Academic-lightgrey)](LICENSE)
 
 ---
@@ -114,7 +114,18 @@ Vidéo Upload / Flux Caméra
 Docker Desktop  |  8 Go RAM minimum  |  4 Go disque libre
 ```
 
-### Option 1 — Docker (recommandé)
+### ⚡ Option 0 — Scripts Windows (le plus simple)
+
+Double-clic sur les fichiers à la racine du projet :
+
+| Fichier | Action |
+|---|---|
+| `start.bat` | Lance tous les services + ouvre le navigateur |
+| `stop.bat` | Arrête tous les services proprement |
+
+> **Prérequis** : Docker Desktop ouvert (icône 🐳 verte dans la barre des tâches)
+
+### Option 1 — Docker Compose (recommandé)
 
 ```bash
 git clone https://github.com/zghari-med/AMANE-NEXUS.git
@@ -125,6 +136,14 @@ docker-compose up -d
 L'application sera disponible sur **http://localhost:3000**
 
 **Identifiants par défaut :** `admin@surveillance.com` / `admin123`
+
+```bash
+# Arrêter
+docker-compose down
+
+# Vérifier les services
+docker ps
+```
 
 ### Option 2 — Développement local
 
