@@ -1,15 +1,16 @@
 # Matrices de Confusion — Système de Surveillance Intelligente
 
 **Date d'évaluation:** 1 juin 2026
-**Datasets:** URFD (70 vidéos) + UR Fall Roboflow + People Counting + Abandoned Bag + Person & Luggage
-**Total images testées:** 517 images + 70 vidéos annotées
-**Seuils utilisés:** conf=0.20, crowd_min=4, move_px=80, min_frames=15
+**Datasets:** URFD (70 vidéos) + UR Fall (200 img) + People Counting (135 img) + Abandoned Bag + Person & Luggage (200 img)
+**Total:** 517 images + 70 vidéos annotées
+**Seuils production:** conf=0.25, crowd_min=5, move_px=50, min_frames=22, edge_margin=20px
 **Méthode:** YOLOv8n CPU, IoU ≥ 0.5, AP via courbe PR (VOC 2007 11-point)
 
 ---
 
-## 🔴 CHUTE DE PERSONNE (Ratio h/w < 0.65)
-**Dataset de validation :** URFD — 70 vidéos réelles annotées
+## 🔴 CHUTE DE PERSONNE
+**Algorithme :** Ratio h/w < 0.65 + filtres bbox (height≥50px, width≥80px, area≥5000px², hors bord)
+**Dataset :** URFD — 70 vidéos réelles annotées
 
 ```
                  PRÉDICTION
@@ -20,100 +21,97 @@ Réel    Négatif │   30 (TN)  │   40 (FP)
         Positif │    0 (FN)  │   30 (TP)
         ────────────┴──────────
 
-  • Précision  = TP / (TP + FP) = 30 / 70   = 42.9%
-  • Rappel     = TP / (TP + FN) = 30 / 30   = 100.0%  ← aucune chute manquée
+  • Précision  = 30 / 70  = 42.9%
+  • Rappel     = 30 / 30  = 100.0%  ← aucune chute manquée
   • F1-Score   = 2 × 0.429 × 1.000 / (0.429 + 1.000) = 0.600
-  • Accuracy   = (TP + TN) / Total = 60 / 100 = 60.0%
+  • Accuracy   = (30 + 30) / 100 = 60.0%
   • AP@0.5     = 0.393
-  • IoU moyen  = 0.780
+  • IoU moyen  = 0.886
 ```
 
 ### Analyse
-- **Vrais Positifs (30)** : Chutes correctement détectées sur 70 vidéos URFD
-- **Faux Positifs (40)** : Personnes penchées / assises / angle défavorable
-- **Faux Négatifs (0)** : **Aucune chute manquée** — Recall = 100% (priorité sécurité)
-- **Choix délibéré** : seuil 0.65 volontairement bas pour ne jamais rater une chute
+- **Rappel = 100%** : aucune chute réelle manquée sur 70 vidéos URFD — priorité sécurité
+- **FP = 40** : angles défavorables, personnes penchées/assises
+- **Filtre bord frame** : personnes entrant dans le champ exclues (tête visible = faux positif corrigé)
 
 ---
 
-## 🟡 ATTROUPEMENT (≥4 personnes, distance <200px)
-**Dataset de validation :** People Counting YOLOv8 — 135 images annotées (Roboflow)
+## 🟡 ATTROUPEMENT
+**Algorithme :** ≥5 personnes, distance <200px
+**Dataset :** People Counting YOLOv8 — 135 images (Roboflow)
 
 ```
                  PRÉDICTION
            Négatif  │  Positif
         ────────────┼──────────
-Réel    Négatif │    0 (TN)  │    0 (FP)
+Réel    Négatif │   15 (TN)  │    1 (FP)
         ────────────┼──────────
-        Positif │   12 (FN)  │  105 (TP)
+        Positif │   40 (FN)  │   61 (TP)
         ────────────┴──────────
 
-  • Précision  = TP / (TP + FP) = 105 / 105  = 100.0%  ← zéro fausse alarme
-  • Rappel     = TP / (TP + FN) = 105 / 117  = 89.7%
-  • F1-Score   = 2 × 1.000 × 0.897 / (1.000 + 0.897) = 0.946
-  • Accuracy   = (TP + TN) / Total = 105 / 117 = 89.7%
-  • AP@0.5     = 1.000
-  • IoU moyen  = 0.619
+  • Précision  = 61 / 62  = 98.4%  ← quasi-zéro fausse alarme
+  • Rappel     = 61 / 101 = 60.4%
+  • F1-Score   = 2 × 0.984 × 0.604 / (0.984 + 0.604) = 0.748
+  • Accuracy   = (61 + 15) / 117 = 65.0%
+  • AP@0.5     = 0.892
+  • IoU moyen  = 0.597
 ```
 
 ### Analyse
-- **Vrais Positifs (105)** : Attroupements détectés avec 100% de précision
-- **Faux Positifs (0)** : Aucune fausse alarme sur 135 images
-- **Faux Négatifs (12)** : Groupes manqués (personnes à la limite du seuil 4 personnes)
-- **AP@0.5 = 1.000** : Performance parfaite sur la courbe Précision-Rappel
+- **Précision 98.4%** : seuil 5 personnes strict → quasi aucune fausse alarme en production
+- **FN = 40** : groupes de 3-4 personnes non détectés (sous le seuil — comportement voulu)
 
 ---
 
-## 🟢 OBJET ABANDONNÉ (Immobilité ≥15 frames, grille 100px)
-**Dataset de validation :** Abandoned Bag + Person & Luggage — 200 images (Roboflow)
+## 🟢 OBJET ABANDONNÉ
+**Algorithme :** Immobilité ≥22 frames traitées, grille 100px, déplacement <50px
+**Dataset :** Abandoned Bag + Person & Luggage — 200 images (Roboflow)
 
 ```
                  PRÉDICTION
            Négatif  │  Positif
         ────────────┼──────────
-Réel    Négatif │    1 (TN)  │   62 (FP)
+Réel    Négatif │    1 (TN)  │   48 (FP)
         ────────────┼──────────
-        Positif │   74 (FN)  │  152 (TP)
+        Positif │   86 (FN)  │  140 (TP)
         ────────────┴──────────
 
-  • Précision  = TP / (TP + FP) = 152 / 214  = 71.0%
-  • Rappel     = TP / (TP + FN) = 152 / 226  = 67.3%
-  • F1-Score   = 2 × 0.710 × 0.673 / (0.710 + 0.673) = 0.691
-  • Accuracy   = (TP + TN) / Total = 153 / 289 = 52.9%
+  • Précision  = 140 / 188 = 74.5%
+  • Rappel     = 140 / 226 = 61.9%
+  • F1-Score   = 2 × 0.745 × 0.619 / (0.745 + 0.619) = 0.676
+  • Accuracy   = (140 + 1) / 275 = 51.3%
   • AP@0.5     = 0.586
-  • IoU moyen  = 0.857  ← très bonne localisation
+  • IoU moyen  = 0.865  ← excellente localisation
 ```
 
 ### Analyse
-- **Vrais Positifs (152)** : Objets portables correctement localisés (IoU=0.857)
-- **Faux Positifs (62)** : Détections YOLO sur objets en mouvement / hors zone
-- **Faux Négatifs (74)** : Objets non détectés par YOLO ou classe non couverte
-- **IoU=0.857** : Excellente précision spatiale quand l'objet est détecté
+- **IoU = 0.865** : très bonne précision spatiale quand objet détecté
+- **FN = 86** : objets hors classes COCO couvertes (vélos, chariots...) ou YOLO ne détecte pas
 
 ---
 
-## 🏆 GLOBAL (Micro-moyenne — 605 images + 70 vidéos)
+## 🏆 GLOBAL (Micro-moyenne — 517 images + 70 vidéos)
 
 ```
                  PRÉDICTION
            Négatif  │  Positif
         ────────────┼──────────
-Réel    Négatif │   31 (TN)  │  102 (FP)
+Réel    Négatif │   46 (TN)  │   89 (FP)
         ────────────┼──────────
-        Positif │   86 (FN)  │  287 (TP)
+        Positif │  126 (FN)  │  231 (TP)
         ────────────┴──────────
 
-  • TP = 30 + 105 + 152 = 287
-  • FP = 40 +   0 +  62 = 102
-  • FN =  0 +  12 +  74 =  86
-  • TN = 30 +   0 +   1 =  31
+  • TP = 30 + 61 + 140 = 231
+  • FP = 40 +  1 +  48 =  89
+  • FN =  0 + 40 +  86 = 126
+  • TN = 30 + 15 +   1 =  46
 
-  • Précision  = 287 / (287 + 102) = 73.8%
-  • Rappel     = 287 / (287 +  86) = 76.9%
-  • F1-Score   = 2 × 0.738 × 0.769 / (0.738 + 0.769) = 0.753
-  • Accuracy   = (287 + 31) / 506  = 62.8%
-  • mAP@0.5   = (0.393 + 1.000 + 0.586) / 3 = 0.660
-  • IoU moyen  = 0.752
+  • Précision  = 231 / (231 +  89) = 72.2%
+  • Rappel     = 231 / (231 + 126) = 64.7%
+  • F1-Score   = 2 × 0.722 × 0.647 / (0.722 + 0.647) = 0.682
+  • Accuracy   = (231 + 46) / 492  = 56.3%
+  • mAP@0.5   = (0.393 + 0.892 + 0.586) / 3 = 0.624
+  • IoU moyen  = 0.783
 ```
 
 ---
@@ -122,53 +120,49 @@ Réel    Négatif │   31 (TN)  │  102 (FP)
 
 | Comportement | TP | FP | FN | TN | **P** | **R** | **F1** | **Acc** | **AP@0.5** | **IoU** |
 |---|---|---|---|---|---|---|---|---|---|---|
-| **Chute** | 30 | 40 | 0 | 30 | 42.9% | 100% | 0.600 | 60.0% | 0.393 | 0.780 |
-| **Attroupement** | 105 | 0 | 12 | 0 | **100%** | 89.7% | **0.946** | 89.7% | **1.000** | 0.619 |
-| **Objet abandonné** | 152 | 62 | 74 | 1 | 71.0% | 67.3% | 0.691 | 52.9% | 0.586 | **0.857** |
-| **GLOBAL** | **287** | **102** | **86** | **31** | **73.8%** | **76.9%** | **0.753** | **62.8%** | **mAP=0.660** | **0.752** |
+| **Chute** | 30 | 40 | 0 | 30 | 42.9% | **100%** | 0.600 | 60.0% | 0.393 | **0.886** |
+| **Attroupement** | 61 | 1 | 40 | 15 | **98.4%** | 60.4% | 0.748 | 65.0% | **0.892** | 0.597 |
+| **Objet abandonné** | 140 | 48 | 86 | 1 | 74.5% | 61.9% | 0.676 | 51.3% | 0.586 | 0.865 |
+| **GLOBAL** | **231** | **89** | **126** | **46** | **72.2%** | **64.7%** | **0.682** | **56.3%** | **mAP=0.624** | **0.783** |
 
 ---
 
 ## 🎯 Benchmark vs Baseline
 
-| Approche | Précision | Rappel | F1-Score | mAP@0.5 |
+| Approche | P | R | F1 | mAP@0.5 |
 |---|---|---|---|---|
 | Aléatoire (50%) | 50% | 50% | 0.500 | ~0.250 |
 | Seuil unique global | 65% | 60% | 0.625 | ~0.400 |
-| **AMANE-NEXUS (3 règles)** | **73.8%** | **76.9%** | **0.753** | **0.660** |
-| Amélioration vs baseline | +23.8% | +26.9% | **+0.253** | **+0.410** |
-
-**Conclusion :** Le système multi-règles surpasse les baselines de **+50.6% en F1-Score**.
+| **AMANE-NEXUS (production)** | **72.2%** | **64.7%** | **0.682** | **0.624** |
 
 ---
 
 ## 💡 Facteurs de Performance
 
-### Facteurs Favorables
-✅ Rappel 100% sur les chutes — aucun incident vital manqué
-✅ Précision 100% + AP=1.0 sur attroupements
-✅ IoU=0.857 sur objets abandonnés — localisation très précise
-✅ Seuils calibrés empiriquement sur datasets annotés réels
-✅ Optimisations : conf=0.20, crowd_min=4, move_px=80
+### Points forts
+✅ Rappel 100% chutes — aucun incident vital manqué
+✅ Précision 98.4% attroupements — quasi-zéro fausse alarme
+✅ IoU=0.886 chutes, 0.865 abandon — localisation très précise
+✅ Filtre bord frame — personnes entrant/sortant du champ ignorées
 
-### Facteurs Limitants
-⚠️ Précision chute 42.9% → personnes penchées/assises faux positifs
-⚠️ 12 attroupements manqués en limite de seuil (groupes de 3-4 personnes)
-⚠️ 74 objets abandonnés manqués → classes COCO non couvertes (meubles, vélos)
+### Limites
+⚠️ Précision chute 42.9% — angles caméra défavorables
+⚠️ Recall attroupement 60.4% — groupes < 5 personnes non détectés (voulu)
+⚠️ 86 abandons manqués — classes COCO non couvertes
 
 ---
 
-## 📝 Méthodologie de Validation
+## 📝 Méthodologie
 
 | Élément | Détail |
 |---|---|
 | **Datasets** | URFD (70 vidéos), UR Fall (200 img), People Counting (135 img), Abandoned Bag + Person & Luggage (200 img) |
+| **Mapping GT→COCO** | IoU matching uniquement (IDs dataset ≠ COCO) |
 | **IoU threshold** | 0.5 (standard COCO) |
 | **AP method** | 11-point interpolation VOC 2007 |
-| **Reproductibilité** | Script `backend/run_benchmark.py` |
-| **Validation CI** | GitHub Actions — F1 ≥ 0.50, Précision ≥ 40% |
+| **Script** | `backend/run_benchmark.py` |
+| **CI validation** | F1 ≥ 0.50, Précision ≥ 40% |
 
 ---
 
-**Généré le :** 1 juin 2026
-**Validé par :** Pipeline CI/CD GitHub Actions — 60/60 tests passés
+**Généré le :** 1 juin 2026 | **Tests :** 60/60 ✅ | **CI :** GitHub Actions ✅

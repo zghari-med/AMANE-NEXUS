@@ -2,10 +2,9 @@
 ## Système de Surveillance AMANE-NEXUS
 
 **Date de validation :** 2026-06-01
-**Total datasets testés :** 5 datasets retenus
 **Total images/vidéos testées :** 517 images + 70 vidéos
-**Méthode :** YOLOv8n CPU + IoU >= 0.5, AP via courbe PR (VOC 2007)
-**Seuils :** conf=0.20, crowd_min=4, move_px=80, min_frames=15
+**Seuils production :** conf=0.25, crowd_min=5, move_px=50, min_frames=22, edge_margin=20px
+**Méthode :** YOLOv8n CPU + IoU ≥ 0.5, AP via courbe PR (VOC 2007)
 
 ---
 
@@ -15,27 +14,28 @@
 
 | Dataset | Source | Volume | P | R | F1 | AP@0.5 | IoU | Status |
 |---|---|---|---|---|---|---|---|---|
-| **URFD** | Univ. Rzeszow | 70 vidéos | 42.9% | **100%** | **0.600** | 0.393 | 0.780 | ✅ Retenu |
+| **URFD** | Univ. Rzeszow | 70 vidéos | 42.9% | **100%** | **0.600** | 0.393 | **0.886** | ✅ Retenu |
 | **UR Fall v1i** | Roboflow | 200 images | — | — | — | — | — | Référence AP |
 
-> Recall = 100% sur URFD : aucune chute réelle manquée sur 70 vidéos.
+> Recall = 100% sur URFD : aucune chute réelle manquée.
+> Filtre bord frame : personnes entrant dans le champ exclues (faux positifs corrigés).
 
 ### 2. ATTROUPEMENTS
 
 | Dataset | Source | Volume | P | R | F1 | AP@0.5 | IoU | Status |
 |---|---|---|---|---|---|---|---|---|
-| **People Counting YOLOv8** | Roboflow | 135 images | **100%** | 89.7% | **0.946** | **1.000** | 0.619 | ✅ Retenu |
+| **People Counting YOLOv8** | Roboflow | 135 images | **98.4%** | 60.4% | **0.748** | **0.892** | 0.597 | ✅ Retenu |
 
-> Précision = 100% : zéro fausse alarme sur 135 images.
+> Précision 98.4% : quasi-zéro fausse alarme avec seuil 5 personnes.
 
-### 3. OBJETS ABANDONNES
+### 3. OBJETS ABANDONNÉS
 
 | Dataset | Source | Volume | P | R | F1 | AP@0.5 | IoU | Status |
 |---|---|---|---|---|---|---|---|---|
-| **Person & Luggage** | Roboflow | 100 images | 71.0% | 67.3% | **0.691** | 0.586 | **0.857** | ✅ Retenu |
-| **Abandoned Bag** | Roboflow | 100 images | 71.0% | 67.3% | **0.691** | 0.586 | **0.857** | ✅ Retenu |
+| **Abandoned Bag** | Roboflow | 100 images | 74.5% | 61.9% | **0.676** | 0.586 | **0.865** | ✅ Retenu |
+| **Person & Luggage** | Roboflow | 100 images | 74.5% | 61.9% | **0.676** | 0.586 | **0.865** | ✅ Retenu |
 
-> IoU = 0.857 : très bonne précision spatiale de localisation.
+> IoU = 0.865 : très bonne précision spatiale de localisation.
 
 ---
 
@@ -43,28 +43,28 @@
 
 | Comportement | TP | FP | FN | TN | **P** | **R** | **F1** | **AP@0.5** | **IoU** |
 |---|---|---|---|---|---|---|---|---|---|
-| **Chutes** | 30 | 40 | 0 | 30 | 42.9% | **100%** | 0.600 | 0.393 | 0.780 |
-| **Attroupements** | 105 | 0 | 12 | 0 | **100%** | 89.7% | **0.946** | **1.000** | 0.619 |
-| **Objets abandonnés** | 152 | 62 | 74 | 1 | 71.0% | 67.3% | 0.691 | 0.586 | **0.857** |
-| **GLOBAL** | **287** | **102** | **86** | **31** | **73.8%** | **76.9%** | **0.753** | **mAP=0.660** | **0.752** |
+| **Chutes** | 30 | 40 | 0 | 30 | 42.9% | **100%** | 0.600 | 0.393 | **0.886** |
+| **Attroupements** | 61 | 1 | 40 | 15 | **98.4%** | 60.4% | 0.748 | **0.892** | 0.597 |
+| **Objets abandonnés** | 140 | 48 | 86 | 1 | 74.5% | 61.9% | 0.676 | 0.586 | 0.865 |
+| **GLOBAL** | **231** | **89** | **126** | **46** | **72.2%** | **64.7%** | **0.682** | **mAP=0.624** | **0.783** |
 
 ---
 
 ## CORRESPONDANCE CLASSES GT vs COCO
 
-| Dataset | Classe GT | ID dataset | Classe COCO équivalente | ID COCO |
+| Dataset | Classe GT | ID dataset | Équivalent COCO | ID COCO |
 |---|---|---|---|---|
 | UR Fall | fall | 0 | person (tombée) | 0 |
-| UR Fall | person | 1 | person (debout) | 0 |
+| UR Fall | person | 1 | person (debout, ignoré) | 0 |
 | People Counting | people-counting | 0 | person | 0 |
 | Abandoned Bag | luggage | 0 | suitcase/handbag | 28/26 |
 | Person & Luggage | backpack | 0 | backpack | 24 |
 | Person & Luggage | handbag | 1 | handbag | 26 |
 | Person & Luggage | luggage | 2 | suitcase | 28 |
-| Person & Luggage | person | 3 | person | 0 |
+| Person & Luggage | person | 3 | person (exclu du GT) | 0 |
 | Person & Luggage | suitcase | 4 | suitcase | 28 |
 
-> **Note :** Le matching GT↔PRED se fait par IoU uniquement (pas par class ID) car les IDs de classes dataset ≠ COCO.
+> Matching GT↔PRED par IoU uniquement (IDs dataset ≠ COCO).
 
 ---
 
@@ -75,7 +75,7 @@
 | Fall Detection v4 | Chutes | Classe incompatible COCO |
 | FallDatasets v4i | Chutes | Classes non standards |
 | CrowdHuman | Attroupements | 50-400 personnes/image (hors scope) |
-| Crowd Detection CCTV | Attroupements | Segmentation pas bbox |
+| Crowd Detection CCTV | Attroupements | Segmentation, pas bbox |
 | Abandoned Object v2 | Objets | Classe Bag incompatible |
 | People Counting v6i | Attroupements | Résultats inférieurs à v1i |
 
@@ -92,5 +92,4 @@ D:\surveillance_project\backend\data\
 │   └── Abandoned_Bag_v1i_yolov8__3_\ (nc:1 — luggage=0)
 ```
 
-*Script de benchmark : `backend/run_benchmark.py`*
-*Résultats JSON : `backend/data/benchmark_results.json`*
+*Script : `backend/run_benchmark.py` | Résultats : `backend/data/benchmark_results.json`*

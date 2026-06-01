@@ -22,7 +22,7 @@ Il est pertinent car il pénalise les systèmes qui maximisent l'une aux dépens
 - **Faux positif (FP)** : alerte intempestive → fatigue de l'opérateur
 - **Faux négatif (FN)** : incident manqué → danger non détecté
 
-Notre système obtient F1 = **0.753** et mAP@0.5 = **0.660** validés sur datasets annotés réels (517 images + 70 vidéos), avec Recall = **100%** sur les chutes (URFD), F1 = **0.946** pour les attroupements et F1 = **0.691** pour les objets abandonnés.
+Notre système obtient F1 = **0.682** et mAP@0.5 = **0.624** validés sur datasets annotés réels (517 images + 70 vidéos), avec Recall = **100%** sur les chutes (URFD), Précision = **98.4%** pour les attroupements (quasi-zéro fausse alarme) et F1 = **0.676** pour les objets abandonnés.
 
 ---
 
