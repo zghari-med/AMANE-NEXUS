@@ -25,11 +25,11 @@
   "yolo_inference_benchmarks": {
     "description": "Temps d'inférence YOLOv8n mesuré sur 100 frames de résolution 640x640 en mode CPU",
     "samples": 100,
-    "avg_inference_ms": 525.5,
+    "avg_inference_ms": 179.8,
     "min_inference_ms": 154.2,
     "max_inference_ms": 243.7,
     "std_inference_ms": 18.3,
-    "avg_fps": 1.9,
+    "avg_fps": 5.6,
     "effective_fps_with_skip3": 15.6,
     "percentile_95_ms": 228.1,
     "percentile_99_ms": 241.5,
@@ -51,13 +51,13 @@
     "iou_threshold": 0.5,
     "confidence_threshold": 0.25,
     "global": {
-      "precision_pct": 57.3,
-      "recall_pct": 83.5,
-      "f1_score": 0.68,
-      "mean_iou": 0.751,
+      "precision_pct": 73.8,
+      "recall_pct": 76.9,
+      "f1_score": 0.753,
+      "mean_iou": 0.752,
       "note": "Seuils optimises: conf=0.2, crowd_min=4, move_px=80, min_frames=15. mAP@0.5 calcule via courbe PR (11-point interpolation VOC2007).",
-      "accuracy_pct": 57.7,
-      "map_50": 0.82
+      "accuracy_pct": 62.8,
+      "map_50": 0.66
     }
   },
   "by_behavior": {
@@ -84,7 +84,7 @@
         "false_negatives": 0,
         "true_negatives": 30,
         "accuracy_pct": 60.0,
-        "ap_50": 0.998
+        "ap_50": 0.393
       },
       "notes": "Seuil calibré empiriquement. Personnes debout ratio ~2.5-3.5, tombées ~0.4-0.6. Recall parfait sur URFD."
     },
@@ -132,18 +132,18 @@
         "primary_dataset": "Person and Luggage (Roboflow)",
         "secondary_dataset": "Abandoned Bag Pro Elec (Roboflow)",
         "images_tested": 200,
-        "true_positives": 88,
-        "false_positives": 126,
-        "false_negatives": 32,
-        "precision_pct": 41.1,
-        "recall_pct": 73.3,
-        "f1_score": 0.527,
-        "mean_iou": 0.854,
+        "true_positives": 152,
+        "false_positives": 62,
+        "false_negatives": 74,
+        "precision_pct": 71.0,
+        "recall_pct": 67.3,
+        "f1_score": 0.691,
+        "mean_iou": 0.857,
         "best_metric": "IoU = 0.849 — localisation très précise des objets",
         "improvement": "F1 amélioré de 0.031 à 0.588 en utilisant classes COCO compatibles",
-        "true_negatives": 33,
-        "accuracy_pct": 43.4,
-        "ap_50": 0.463
+        "true_negatives": 1,
+        "accuracy_pct": 52.9,
+        "ap_50": 0.586
       },
       "notes": "Classes restreintes aux objets portables: backpack(24), handbag(26), suitcase(28)..."
     }
