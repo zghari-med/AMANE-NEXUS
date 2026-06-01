@@ -268,31 +268,32 @@ csv = engine.export_metrics_csv(analysis_id)
 from services.analytics_service import BenchmarkLoader
 
 data = BenchmarkLoader.get_or_load()
-f1 = data['model_accuracy']['global']['f1_score']  # 0.857
+f1 = data['model_accuracy']['global']['f1_score']  # 0.627 (valide sur 11 datasets reels)
 ```
 
 ---
 
 ## 7. Benchmarks {#benchmarks}
 
-### Résultats clés
+### Résultats clés — Validation END-TO-END (11 datasets réels)
 
-| Métrique | Valeur |
-|----------|--------|
-| F1-Score global | 0.857 (85.7%) |
-| Précision | 94.5% |
-| Rappel | 83.3% |
-| Inférence moy. (CPU) | 191 ms |
-| FPS effectif | 5.2 FPS |
-| FPS avec SKIP×3 | 15.6 FPS |
+| Métrique | Valeur | Source |
+|----------|--------|--------|
+| F1-Score global | **0.627** | 11 datasets annotés Roboflow + URFD |
+| Précision moyenne | 57.2% | IoU >= 0.5 |
+| Rappel moyen | 76.4% | 1040 images + 70 vidéos |
+| IoU moyen | 0.764 | Localisation bounding boxes |
+| Inférence moy. (CPU) | 191 ms | YOLOv8n, 640x640 |
+| FPS effectif | 5.2 FPS | Sans FRAME_SKIP |
+| FPS avec SKIP×3 | 15.6 FPS | Mode production |
 
 ### Par comportement
 
-| Comportement | Précision | Rappel | F1 |
-|---|---|---|---|
-| Chute | 88.2% | 83.3% | 0.857 |
-| Attroupement | 88.9% | 80.0% | 0.842 |
-| Objet abandonné | 85.7% | 85.7% | 0.857 |
+| Comportement | Dataset | Précision | Rappel | F1 | IoU |
+|---|---|---|---|---|---|
+| Chute | URFD (70 vidéos) | 42.9% | **100%** | **0.600** | 0.429 |
+| Attroupement | People Counting | **74.8%** | 64.6% | **0.693** | 0.691 |
+| Objet abandonné | Person+Luggage | 54.0% | 64.5% | **0.588** | **0.849** |
 
 ---
 
@@ -308,13 +309,13 @@ pytest tests/ -v --cov=. --cov-report=term-missing
 
 **test_analytics.py** :
 - `TestAnalyticsEngineInitialization` : init engine + connexion MongoDB
-- `TestDetectionAccuracy` : F1=0.857, P/R cohérence formule
+- `TestDetectionAccuracy` : F1>=0.50, P/R coherence formule
 - `TestStatisticsComputation` : structure, comptages, avg_per_day
 - `TestTrendAnalysis` : structure vide, direction, avg_per_day
 
 **test_benchmarks.py** :
 - `TestBenchmarkFileExists` : existence + JSON valide
-- `TestBenchmarkStructure` : F1=0.857, Précision=94.5%, Rappel=83.3%
+- `TestBenchmarkStructure` : F1>=0.50, Precision>=40%, validation END-TO-END
 - `TestBenchmarkLoader` : lazy-loading, cache, F1
 
 ---
@@ -325,7 +326,7 @@ Pipeline GitHub Actions (`.github/workflows/ci.yml`) :
 
 1. **lint-backend** : flake8 --max-line-length=120
 2. **test-backend** : pytest avec MongoDB service
-3. **validate-benchmarks** : vérification F1=0.857
+3. **validate-benchmarks** : verification F1>=0.50 (valide sur 11 datasets reels)
 4. **test-frontend** : npm lint + npm build
 5. **docker-build** : build image Docker
 6. **pipeline-report** : affiche le status final
