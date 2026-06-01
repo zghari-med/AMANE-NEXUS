@@ -22,49 +22,51 @@ behaviors = data["by_behavior"]
 plt.style.use('seaborn-v0_8-darkgrid')
 sns.set_palette("husl")
 
+
 def create_confusion_matrix_plot(behavior_name, metrics, color_map):
     """Crée une visualisation de matrice de confusion"""
     tp = metrics["true_positives"]
     fp = metrics["false_positives"]
     fn = metrics["false_negatives"]
     tn = 100
-    
+
     # Matrice
     cm = np.array([[tn, fp], [fn, tp]])
-    
+
     # Figure
     fig, ax = plt.subplots(figsize=(8, 6))
-    
+
     # Heatmap
     sns.heatmap(cm, annot=True, fmt='d', cmap=color_map, cbar=False,
                 xticklabels=['Negative', 'Positive'],
                 yticklabels=['Negative', 'Positive'],
                 ax=ax, square=True, linewidths=2, linecolor='white',
                 cbar_kws={'label': 'Count'})
-    
+
     ax.set_xlabel('Predicted', fontsize=12, fontweight='bold')
     ax.set_ylabel('Real', fontsize=12, fontweight='bold')
-    ax.set_title(f'Confusion Matrix -- {behavior_name.upper()}', 
+    ax.set_title(f'Confusion Matrix -- {behavior_name.upper()}',
                  fontsize=14, fontweight='bold', pad=20)
-    
+
     # Metrics text
     p = metrics["precision_pct"] / 100
     r = metrics["recall_pct"] / 100
     f1 = metrics["f1_score"]
-    
+
     metrics_text = (f'Precision: {p:.1%}  |  Recall: {r:.1%}  |  F1: {f1:.3f}\n'
-                   f'TP: {tp} | FP: {fp} | FN: {fn} | TN: {tn}')
+                    f'TP: {tp} | FP: {fp} | FN: {fn} | TN: {tn}')
     ax.text(0.5, -0.15, metrics_text, transform=ax.transAxes,
-           fontsize=10, ha='center', va='top',
-           bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-    
+            fontsize=10, ha='center', va='top',
+            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
     plt.tight_layout()
-    
+
     # Sauvegarde
     output_file = f"D:/surveillance_project/docs/confusion_matrix_{behavior_name}.png"
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     print(f"[OK] Saved: {output_file}")
     plt.close()
+
 
 # Couleurs par comportement
 colors = {
@@ -94,7 +96,7 @@ sns.heatmap(cm_global, annot=True, fmt='d', cmap='Blues', cbar=False,
 
 ax.set_xlabel('Predicted', fontsize=12, fontweight='bold')
 ax.set_ylabel('Real', fontsize=12, fontweight='bold')
-ax.set_title('Confusion Matrix -- GLOBAL (Micro-Average)', 
+ax.set_title('Confusion Matrix -- GLOBAL (Micro-Average)',
              fontsize=14, fontweight='bold', pad=20)
 
 p_global = data["model_accuracy"]["global"]["precision_pct"] / 100
@@ -102,14 +104,14 @@ r_global = data["model_accuracy"]["global"]["recall_pct"] / 100
 f1_global = data["model_accuracy"]["global"]["f1_score"]
 
 metrics_text = (f'Precision: {p_global:.1%}  |  Recall: {r_global:.1%}  |  F1: {f1_global:.3f}\n'
-               f'TP: {tp_global} | FP: {fp_global} | FN: {fn_global}')
+                f'TP: {tp_global} | FP: {fp_global} | FN: {fn_global}')
 ax.text(0.5, -0.15, metrics_text, transform=ax.transAxes,
-       fontsize=10, ha='center', va='top',
-       bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.5))
+        fontsize=10, ha='center', va='top',
+        bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.5))
 
 plt.tight_layout()
 plt.savefig("D:/surveillance_project/docs/confusion_matrix_global.png", dpi=300, bbox_inches='tight')
-print(f"[OK] Saved: D:/surveillance_project/docs/confusion_matrix_global.png")
+print("[OK] Saved: D:/surveillance_project/docs/confusion_matrix_global.png")
 plt.close()
 
 print("\n[DONE] All confusion matrices visualized successfully!")
