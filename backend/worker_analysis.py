@@ -142,7 +142,10 @@ def run_analysis(analysis_id: str, video_path: str,
 
         # Anti-duplication attroupement : alerte seulement si foule RÉAPPARAÎT
         # crowd_active = True tant que la foule est présente → pas de nouvelle alerte
+        # crowd_absent_frames = délai de grâce avant de considérer la foule disparue
         crowd_active = False
+        crowd_absent_frames = 0
+        CROWD_GRACE_FRAMES = 5  # nb frames traitées sans foule avant reset
 
         # Tracking objets portables : key → {immobile_frames, last_cx, last_cy, alerted, bbox}
         obj_track = {}
@@ -237,18 +240,22 @@ def run_analysis(analysis_id: str, video_path: str,
                         crowd_group = grp
                         break
 
-            # Logique de transition : alerte seulement si la foule RÉAPPARAÎT
+            # Logique de transition avec délai de grâce (anti-fluctuation YOLO)
             if crowd_group:
-                # Foule présente : alerte uniquement si elle n'était pas là avant
+                crowd_absent_frames = 0  # reset délai de grâce
                 if not crowd_active and (frame_id - last_alert['crowding']) > CROWD_COOLDOWN:
+                    # Foule RÉAPPARAÎT → alerte
                     events_this_frame.append((
                         'crowding', 'medium',
                         [persons[i]['bbox'] for i in crowd_group],
                         [persons[i]['center'] for i in crowd_group],
                     ))
-                crowd_active = True   # marquer foule active
+                crowd_active = True
             else:
-                crowd_active = False  # foule disparue → prête pour prochaine alerte
+                # Foule absente : attendre CROWD_GRACE_FRAMES avant de considérer disparue
+                crowd_absent_frames += 1
+                if crowd_absent_frames >= CROWD_GRACE_FRAMES:
+                    crowd_active = False  # vraiment disparue
 
             # ── Règle 3 : Objet abandonné ─────────────────────────────────
             seen_keys = set()
