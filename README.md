@@ -1,7 +1,7 @@
 # AMANE-NEXUS
 
 **Système de Surveillance Intelligente Multi-Agent**  
-PFE MSID-TAM — Mohamed Z'GHARI
+Mohamed Z'GHARI
 
 [![CI/CD](https://github.com/zghari-med/AMANE-NEXUS/actions/workflows/ci.yml/badge.svg)](https://github.com/zghari-med/AMANE-NEXUS/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)](https://python.org)
@@ -307,9 +307,7 @@ lint-backend → test-backend → validate-benchmarks → test-frontend → dock
 
 ## Auteur
 
-**Mohamed Z'GHARI**  
-PFE MSID-TAM — Master Systèmes Informatiques et Décisionnels  
-Université Mohammed V — Rabat, 2026
+**Mohamed Z'GHARI**
 
 ---
 
