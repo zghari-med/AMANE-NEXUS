@@ -140,6 +140,10 @@ def run_analysis(analysis_id: str, video_path: str,
         # Cooldowns : frame réelle du dernier déclenchement
         last_alert = {'fall': -9999, 'crowding': -9999, 'abandoned': -9999}
 
+        # Anti-duplication attroupement : alerte seulement si foule RÉAPPARAÎT
+        # crowd_active = True tant que la foule est présente → pas de nouvelle alerte
+        crowd_active = False
+
         # Tracking objets portables : key → {immobile_frames, last_cx, last_cy, alerted, bbox}
         obj_track = {}
 
@@ -214,12 +218,12 @@ def run_analysis(analysis_id: str, video_path: str,
                         None,
                     ))
 
-            # ── Règle 2 : Attroupement — max 1 alerte par frame ──────────
-            if (len(persons) >= CROWD_MIN_PERSONS
-                    and (frame_id - last_alert['crowding']) > CROWD_COOLDOWN):
+            # ── Règle 2 : Attroupement — alerte uniquement sur APPARITION ────
+            # Détecte si un groupe est présent dans cette frame
+            crowd_group = None
+            if len(persons) >= CROWD_MIN_PERSONS:
                 centers = [p['center'] for p in persons]
                 used = set()
-                crowd_group = None
                 for i, c in enumerate(centers):
                     if i in used:
                         continue
@@ -232,12 +236,19 @@ def run_analysis(analysis_id: str, video_path: str,
                     if len(grp) >= CROWD_MIN_PERSONS:
                         crowd_group = grp
                         break
-                if crowd_group:
+
+            # Logique de transition : alerte seulement si la foule RÉAPPARAÎT
+            if crowd_group:
+                # Foule présente : alerte uniquement si elle n'était pas là avant
+                if not crowd_active and (frame_id - last_alert['crowding']) > CROWD_COOLDOWN:
                     events_this_frame.append((
                         'crowding', 'medium',
                         [persons[i]['bbox'] for i in crowd_group],
                         [persons[i]['center'] for i in crowd_group],
                     ))
+                crowd_active = True   # marquer foule active
+            else:
+                crowd_active = False  # foule disparue → prête pour prochaine alerte
 
             # ── Règle 3 : Objet abandonné ─────────────────────────────────
             seen_keys = set()
