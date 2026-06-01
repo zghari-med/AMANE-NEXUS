@@ -18,14 +18,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CAPTURES_DIR = os.path.join(BASE_DIR, 'captures')
 os.makedirs(CAPTURES_DIR, exist_ok=True)
 
-# ── Seuils calibrés ─────────────────────────────────────────────────────
+# ── Seuils calibrés (valeurs originales validées) ────────────────────────
 FALL_RATIO_THRESHOLD = 0.65   # h/w < 0.65 → personne tombée
-CROWD_MIN_PERSONS = 4         # [#7]  5→4 : capturer plus de groupes réels (+R)
+CROWD_MIN_PERSONS = 5         # 5+ personnes proches = attroupement
 CROWD_PROXIMITY_PX = 200
-ABANDONED_MOVE_PX = 80        # [#15] 50→80 : tolérer micro-mouvements caméra (+R)
-ABANDONED_MIN_FRAMES = 15     # [#16] 22→15 : détecter abandons plus courts (+R)
-CONFIDENCE_MIN = 0.20         # [#9]  0.25→0.20 : détecter plus de personnes/objets (+R)
-FRAME_SKIP = 2                # [#11] 3→2 : analyser 1 frame/3 au lieu de 1/4 (+R)
+ABANDONED_MOVE_PX = 50        # mouvement max (px) pour "immobile"
+ABANDONED_MIN_FRAMES = 22     # frames traitées immobiles avant alerte
+CONFIDENCE_MIN = 0.25         # seuil confiance YOLO
+FRAME_SKIP = 3                # traitement 1 frame sur 4
 
 # Cooldown en FRAMES RÉELLES entre deux alertes du même type
 FALL_COOLDOWN = 300   # ~10s @ 30fps — evite double detection meme chute
@@ -33,7 +33,6 @@ CROWD_COOLDOWN = 90
 ABANDONED_COOLDOWN = 900   # ~30s @ 30fps — prevents re-alerting same drifting object
 
 # Objets PORTABLES uniquement (pas les meubles/écrans fixes)
-# [#18] Élargi : +laptop, +mouse, +keyboard, +book pour meilleur rappel
 OBJECT_CLASSES = {
     24,  # backpack
     25,  # umbrella
@@ -41,12 +40,7 @@ OBJECT_CLASSES = {
     28,  # suitcase
     36,  # skateboard
     39,  # bottle
-    63,  # laptop
-    64,  # mouse
-    65,  # remote
-    66,  # keyboard
     67,  # cell phone
-    73,  # book
     76,  # scissors
 }
 
