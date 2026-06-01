@@ -20,8 +20,9 @@ os.makedirs(CAPTURES_DIR, exist_ok=True)
 
 # ── Seuils calibrés (valeurs originales validées) ────────────────────────
 FALL_RATIO_THRESHOLD = 0.65   # h/w < 0.65 → personne tombée
-FALL_MIN_HEIGHT_PX = 40       # hauteur bbox minimale — exclut têtes partielles (<40px)
-FALL_MIN_AREA_PX = 3000       # aire bbox minimale — exclut détections partielles
+FALL_MIN_HEIGHT_PX = 60       # hauteur bbox minimale — exclut têtes partielles (<60px)
+FALL_MIN_WIDTH_PX = 80        # largeur bbox minimale — personne couchée est large
+FALL_MIN_AREA_PX = 6000       # aire bbox minimale — tête ≈ 3000px² exclue
 CROWD_MIN_PERSONS = 5         # 5+ personnes proches = attroupement
 CROWD_PROXIMITY_PX = 200
 ABANDONED_MOVE_PX = 50        # mouvement max (px) pour "immobile"
@@ -193,8 +194,11 @@ def run_analysis(analysis_id: str, video_path: str,
                     w = max(x2 - x1, 1)
                     area = h * w
                     ratio = h / w
-                    # Exclure têtes partielles : bbox trop petite ou trop étroite
-                    if ratio < FALL_RATIO_THRESHOLD and h >= FALL_MIN_HEIGHT_PX and area >= FALL_MIN_AREA_PX:
+                    # Exclure têtes/corps partiels : bbox trop petite, trop étroite ou trop petite aire
+                    if (ratio < FALL_RATIO_THRESHOLD
+                            and h >= FALL_MIN_HEIGHT_PX
+                            and w >= FALL_MIN_WIDTH_PX
+                            and area >= FALL_MIN_AREA_PX):
                         fallen.append(p)
                 if fallen:
                     events_this_frame.append((
