@@ -16,14 +16,18 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATASET_DIR = os.path.join(BASE_DIR, "data", "datasets")
 RESULTS_PATH = os.path.join(BASE_DIR, "data", "benchmark_results.json")
 
-# ── Seuils optimisés ─────────────────────────────────────────────────────────
-CONFIDENCE_MIN = 0.20
-CROWD_MIN_PERSONS = 4
+# ── Seuils production (alignés worker_analysis.py) ───────────────────────────
+CONFIDENCE_MIN = 0.25
+CROWD_MIN_PERSONS = 5
 CROWD_PROXIMITY_PX = 200
-ABANDONED_MOVE_PX = 80
-ABANDONED_MIN_FRAMES = 15
+ABANDONED_MOVE_PX = 50
+ABANDONED_MIN_FRAMES = 22
 FALL_RATIO_THRESHOLD = 0.65
-OBJECT_CLASSES = {24, 25, 26, 28, 36, 39, 63, 64, 65, 66, 67, 73, 76}
+FALL_MIN_HEIGHT_PX = 50       # exclure corps trop petits
+FALL_MIN_WIDTH_PX = 80        # exclure détections trop étroites
+FALL_MIN_AREA_PX = 5000       # exclure détections fragmentées
+FALL_EDGE_MARGIN = 20         # exclure personnes entrant/sortant du champ
+OBJECT_CLASSES = {24, 25, 26, 28, 36, 39, 67}
 IOU_THRESHOLD = 0.5
 
 # Seuils de confiance pour la courbe PR / mAP
@@ -356,8 +360,15 @@ def benchmark_fall(model):
             if int(box.cls[0]) == 0:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 conf = float(box.conf[0])
-                ratio = max(y2 - y1, 1) / max(x2 - x1, 1)
-                if ratio < FALL_RATIO_THRESHOLD and conf >= CONFIDENCE_MIN:
+                bh = max(y2 - y1, 1)
+                bw = max(x2 - x1, 1)
+                ratio = bh / bw
+                area = bh * bw
+                at_edge = (x1 <= FALL_EDGE_MARGIN or y1 <= FALL_EDGE_MARGIN
+                           or x2 >= w - FALL_EDGE_MARGIN or y2 >= h - FALL_EDGE_MARGIN)
+                if (ratio < FALL_RATIO_THRESHOLD and conf >= CONFIDENCE_MIN
+                        and bh >= FALL_MIN_HEIGHT_PX and bw >= FALL_MIN_WIDTH_PX
+                        and area >= FALL_MIN_AREA_PX and not at_edge):
                     fallen.append([x1, y1, x2, y2])
                 if conf > max_conf:
                     max_conf = conf
