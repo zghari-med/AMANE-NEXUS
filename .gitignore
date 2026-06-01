@@ -14,6 +14,8 @@ backend/data/datasets_status.json
 # Fichiers temporaires de validation
 pfe/unpacked_docx/
 pfe/unpacked_pptx/
+docs/amane_unpacked/
+docs/*_unpacked/
 backend/.coverage
 .claude/
 

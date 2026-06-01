@@ -325,6 +325,14 @@ def run_analysis(analysis_id: str, video_path: str,
         })
         log.info(f"[Worker] {analysis_id} OK — chutes={falls} foules={crowds} objets={abandoned_count}")
 
+        # Invalider le cache analytics pour que les stats soient fraîches
+        try:
+            from services.analytics_service import invalidate_cache
+            invalidate_cache()
+            log.info("[Worker] Cache analytics invalidé")
+        except Exception as cache_err:
+            log.warning(f"[Worker] Impossible d'invalider le cache: {cache_err}")
+
     except Exception as e:
         log.error(f"[Worker] Erreur {analysis_id}: {e}", exc_info=True)
         update({'status': 'failed', 'error': str(e)})
