@@ -232,7 +232,21 @@ def benchmark_crowding(model):
 
 
 def benchmark_abandoned(model):
+    """
+    Évalue objets abandonnés sur datasets annotés.
+    GT classes (dataset-specific, pas COCO) :
+      Abandoned_Bag : class 0 = luggage
+      Person_and_luggage : class 0=backpack, 1=handbag, 2=luggage, 4=suitcase (3=person exclu)
+    PRED : YOLO COCO classes {24,25,26,28,...} — matching par IoU uniquement (pas par class ID).
+    """
     print("\n[ABANDONED] Abandoned_Bag + Person_and_luggage...")
+
+    # Classes GT à inclure par dataset (dataset-specific IDs, pas COCO)
+    GT_CLASSES = {
+        "Abandoned_Bag_v1i_yolov8__3_": {0},           # luggage
+        "Person_and_luggage_v1i_yolov8": {0, 1, 2, 4},  # backpack,handbag,luggage,suitcase
+    }
+
     tp = fp = fn = tn = 0
     ious = []
     total_imgs = 0
@@ -245,6 +259,7 @@ def benchmark_abandoned(model):
         images = (glob.glob(os.path.join(ds_path, "test", "images", "*.jpg")) +
                   glob.glob(os.path.join(ds_path, "train", "images", "*.jpg")))[:100]
         total_imgs += len(images)
+        valid_gt_cls = GT_CLASSES[ds_name]
 
         for img_path in images:
             img = cv2.imread(img_path)
@@ -253,7 +268,8 @@ def benchmark_abandoned(model):
             h, w = img.shape[:2]
             label_path = img_path.replace("images", "labels").replace(".jpg", ".txt")
             gt_boxes = load_yolo_label(label_path, w, h)
-            gt_obj = [b for b in gt_boxes if b[4] in OBJECT_CLASSES or b[4] != 0]
+            # GT = uniquement les objets portables annotés (classes dataset-specific)
+            gt_obj = [b for b in gt_boxes if b[4] in valid_gt_cls]
 
             results = model.predict(img, imgsz=640, device='cpu',
                                     verbose=False, conf=0.05)[0]
@@ -329,7 +345,8 @@ def benchmark_fall(model):
         h, w = img.shape[:2]
         label_path = img_path.replace("images", "labels").replace(".jpg", ".txt")
         gt_boxes = load_yolo_label(label_path, w, h)
-        gt_fall = len(gt_boxes) > 0
+        # GT class 0 = fall (chute annotée), class 1 = person debout — ignorer class 1
+        gt_fall = any(b[4] == 0 for b in gt_boxes)
 
         results = model.predict(img, imgsz=640, device='cpu',
                                 verbose=False, conf=0.05)[0]

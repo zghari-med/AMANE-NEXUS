@@ -71,23 +71,23 @@ class TestBenchmarkStructure(unittest.TestCase):
         self.assertAlmostEqual(avg_fps, expected_fps, delta=1.0,
             msg=f"FPS incohérent : {avg_fps} vs {expected_fps:.1f} attendu")
 
-    def test_global_f1_equals_0627(self):
-        """F1-score global doit être 0.68 (±0.01) — seuils optimisés."""
+    def test_global_f1_above_threshold(self):
+        """F1-score global doit être >= 0.70 — métriques corrigées sur GT réel."""
         f1 = self.data["model_accuracy"]["global"]["f1_score"]
-        self.assertAlmostEqual(f1, 0.68, delta=0.01,
-            msg=f"F1 attendu 0.68, obtenu {f1}")
+        self.assertGreaterEqual(f1, 0.70,
+            msg=f"F1 trop bas: {f1} (minimum 0.70)")
 
     def test_global_precision(self):
-        """Précision globale doit être 57.3% (±0.5)."""
+        """Précision globale doit être >= 65%."""
         precision = self.data["model_accuracy"]["global"]["precision_pct"]
-        self.assertAlmostEqual(precision, 57.3, delta=0.5,
-            msg=f"Précision attendue 57.3%, obtenu {precision}%")
+        self.assertGreaterEqual(precision, 65.0,
+            msg=f"Précision trop basse: {precision}%")
 
     def test_global_recall(self):
-        """Rappel global doit être 83.5% (±0.5)."""
+        """Rappel global doit être >= 65%."""
         recall = self.data["model_accuracy"]["global"]["recall_pct"]
-        self.assertAlmostEqual(recall, 83.5, delta=0.5,
-            msg=f"Rappel attendu 83.5%, obtenu {recall}%")
+        self.assertGreaterEqual(recall, 65.0,
+            msg=f"Rappel trop bas: {recall}%")
 
     def test_by_behavior_has_three_types(self):
         """by_behavior doit contenir fall, crowding, abandoned_object."""
@@ -146,11 +146,11 @@ class TestBenchmarkLoader(unittest.TestCase):
         self.assertGreater(len(data), 0)
 
     def test_benchmark_loader_has_f1(self):
-        """BenchmarkLoader expose bien le F1=0.68 (seuils optimisés)."""
+        """BenchmarkLoader expose un F1 >= 0.70 (métriques corrigées sur GT réel)."""
         from services.analytics_service import BenchmarkLoader
         data = BenchmarkLoader.get_or_load()
         f1 = data["model_accuracy"]["global"]["f1_score"]
-        self.assertAlmostEqual(f1, 0.68, delta=0.01)
+        self.assertGreaterEqual(f1, 0.70, msg=f"F1 trop bas: {f1}")
 
     def test_benchmark_loader_caches(self):
         """Deux appels successifs retournent le même objet (cache)."""
