@@ -1,7 +1,5 @@
-version: "3.9"
-
 # ═══════════════════════════════════════════════════════════════════════════
-# docker-compose — PFE MSID-TAM Surveillance Platform
+# docker-compose — PFE Surveillance Platform
 # Services : mongodb · redis · backend · frontend
 # ═══════════════════════════════════════════════════════════════════════════
 

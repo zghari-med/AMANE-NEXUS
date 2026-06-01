@@ -1,0 +1,41 @@
+# Datasets (volumineux - pas besoin dans Docker)
+backend/data/URFD-Dataset/
+backend/data/datasets/
+backend/data/roboflow_falls/
+backend/data/roboflow_crowd/
+backend/data/roboflow_abandoned/
+backend/data/db/
+backend/data/Mall-Dataset/
+backend/data/ShanghaiTech/
+backend/data/PETS2009/
+
+# Environnements virtuels
+venv/
+backend/venv/
+.venv/
+
+# Cache Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Git
+.git/
+.github/
+
+# Uploads/captures (générés en runtime)
+backend/uploads/
+backend/captures/
+
+# Fichiers dev
+.claude/
+*.log
+.env.local
+.pytest_cache/
+
+# Validation (pas besoin en prod)
+validation/

@@ -104,11 +104,6 @@ surveillance_project/
 │   │   │   └── BenchmarkChart.jsx
 │   │   └── context/
 │   │       └── authStore.js   # Zustand auth store
-├── docs/
-│   ├── RAPPORT_PFE.md
-│   ├── PFE_CONTEXT.md
-│   ├── WIKI.md (ce fichier)
-│   └── FAQ_SOUTENANCE.md
 ├── .github/
 │   └── workflows/ci.yml
 ├── Dockerfile
