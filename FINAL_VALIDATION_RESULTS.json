@@ -1,0 +1,608 @@
+{
+  "timestamp": "2026-06-01T13:05:47.717808",
+  "system": "AMANE-NEXUS v1.0",
+  "behaviors": {
+    "chutes": {
+      "dataset": "URFD",
+      "total": 70,
+      "TP": 30,
+      "FP": 40,
+      "FN": 0,
+      "TN": 0,
+      "precision": 0.429,
+      "recall": 1.0,
+      "f1": 0.6,
+      "details": [
+        {
+          "video": "fall-01-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-02-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-03-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-04-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-05-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-06-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-07-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-08-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-09-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-10-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-11-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-12-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-13-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-14-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-15-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-16-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-17-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-18-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-19-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-20-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-21-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-22-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-23-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-24-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-25-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-26-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-27-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-28-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-29-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "fall-30-cam0-rgb",
+          "truth": "CHUTE",
+          "pred": "CHUTE",
+          "result": "TP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-01-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-02-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-03-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-04-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-05-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-06-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-07-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-08-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-09-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-10-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-11-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-12-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-13-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-14-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-15-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-16-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-17-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-18-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-19-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-20-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-21-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-22-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-23-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-24-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-25-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-26-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-27-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-28-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-29-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-30-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-31-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-32-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-33-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-34-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-35-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-36-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-37-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-38-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-39-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        },
+        {
+          "video": "adl-40-cam0-rgb",
+          "truth": "NORMAL",
+          "pred": "CHUTE",
+          "result": "FP",
+          "fall_frames": 30,
+          "total_frames": 30
+        }
+      ]
+    },
+    "attroupements": {
+      "dataset": "Crowd-Annotated-20",
+      "total": 20,
+      "TP": 11,
+      "FP": 0,
+      "FN": 0,
+      "TN": 9,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "threshold": 5
+    },
+    "objets_abandonnes": {
+      "dataset": "Abandoned-Annotated-20",
+      "total": 20,
+      "TP": 11,
+      "FP": 0,
+      "FN": 0,
+      "TN": 9,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "threshold_frames": 22
+    }
+  },
+  "global": {
+    "avg_precision": 0.81,
+    "avg_recall": 1.0,
+    "avg_f1": 0.867
+  }
+}

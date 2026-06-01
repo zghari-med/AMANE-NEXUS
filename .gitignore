@@ -1,3 +1,22 @@
+# Datasets (trop volumineux pour git)
+backend/data/URFD-Dataset/
+backend/data/datasets/
+backend/data/roboflow_falls/
+backend/data/roboflow_crowd/
+backend/data/roboflow_abandoned/
+backend/data/Mall-Dataset/
+backend/data/ShanghaiTech/
+backend/data/Abandoned-Objects-Dataset/
+backend/data/PETS2009/
+backend/data/db/
+backend/data/datasets_status.json
+
+# Fichiers temporaires de validation
+pfe/unpacked_docx/
+pfe/unpacked_pptx/
+backend/.coverage
+.claude/
+
 # Python
 __pycache__/
 *.py[cod]

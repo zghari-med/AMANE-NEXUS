@@ -1,51 +1,76 @@
 @echo off
-title AMANE-NEXUS — Démarrage
+setlocal enabledelayedexpansion
+title AMANE-NEXUS Demarrage
 color 0A
 
 echo.
 echo  ============================================================
-echo   AMANE-NEXUS — Système de Surveillance Intelligente
+echo   AMANE-NEXUS - Systeme de Surveillance Intelligente
 echo   PFE Master MSID-TAM 2026
 echo  ============================================================
 echo.
 
-:: ── 1. MongoDB ────────────────────────────────────────────────
-echo  [1/3] Démarrage de MongoDB...
-net start MongoDB >nul 2>&1
-if errorlevel 1 (
-    echo       MongoDB service absent — tentative directe...
-    start "MongoDB" /min mongod --dbpath "C:\data\db" --quiet
-    timeout /t 2 /nobreak >nul
+:: Create MongoDB directory
+if not exist "D:\surveillance_project\backend\data\db" (
+    mkdir "D:\surveillance_project\backend\data\db"
+    echo  [SETUP] MongoDB directory created
 )
-echo       OK
 
-:: ── 2. Backend Flask ──────────────────────────────────────────
-echo  [2/3] Démarrage du backend Flask (port 5000)...
-start "AMANE Backend" /min cmd /c ^
-    "cd /d D:\surveillance_project\backend && ^
-     venv\Scripts\python.exe app_simple.py"
+:: Install Python dependencies
+echo  [1/5] Installing Python dependencies...
+D:\surveillance_project\venv\Scripts\pip.exe install -q -r D:\surveillance_project\backend\requirements.txt >nul 2>&1
+if errorlevel 1 (
+    echo       WARNING: Could not install Python dependencies
+) else (
+    echo       OK
+)
+
+:: Install Node dependencies
+echo  [2/5] Installing Node.js dependencies...
+if not exist "D:\surveillance_project\frontend\node_modules" (
+    cd /d D:\surveillance_project\frontend
+    call npm install --silent >nul 2>&1
+    if errorlevel 1 (
+        echo       WARNING: npm install failed
+    ) else (
+        echo       OK
+    )
+) else (
+    echo       OK (already installed)
+)
+
+:: Start MongoDB
+echo  [3/5] Starting MongoDB...
+start "MongoDB" /min cmd /k "mongod --dbpath D:\surveillance_project\backend\data\db --quiet"
 timeout /t 3 /nobreak >nul
 echo       OK
 
-:: ── 3. Frontend Vite ─────────────────────────────────────────
-echo  [3/3] Démarrage du frontend Vite (port 3000)...
-start "AMANE Frontend" /min cmd /c ^
-    "cd /d D:\surveillance_project\frontend && ^
-     npm run dev"
+:: Start Flask Backend
+echo  [4/5] Starting Flask Backend...
+start "AMANE-Backend" /min cmd /k "cd /d D:\surveillance_project\backend && D:\surveillance_project\venv\Scripts\python.exe app_simple.py"
+timeout /t 4 /nobreak >nul
+echo       OK
+
+:: Start React Frontend
+echo  [5/5] Starting React Frontend...
+start "AMANE-Frontend" /min cmd /k "cd /d D:\surveillance_project\frontend && npm run dev"
 timeout /t 5 /nobreak >nul
 echo       OK
 
 echo.
 echo  ============================================================
-echo   Application prête !
-echo   Ouvrir :  http://localhost:3000
-echo   API     :  http://localhost:5000/api/health
+echo   Application running!
+echo.
+echo   Frontend    : http://localhost:3000
+echo   API         : http://localhost:5000/api/health
+echo   MongoDB     : localhost:27017
+echo.
+echo   Default Login:
+echo   Email       : admin@surveillance.com
+echo   Password    : admin123
 echo  ============================================================
 echo.
 
-:: Ouvrir automatiquement le navigateur
 start "" "http://localhost:3000"
 
-echo  Appuyez sur une touche pour fermer ce terminal...
-echo  (Les serveurs continuent de tourner en arrière-plan)
-pause >nul
+pause

@@ -1082,6 +1082,21 @@ def server_error(error):
     log.error(f"Server error: {error}")
     return jsonify({'error': 'Internal server error'}), 500
 
+def seed_admin():
+    """Créer admin par défaut si aucun admin n'existe."""
+    if db.user.count_documents({'role': 'admin'}) == 0:
+        hashed = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt(10))
+        db.user.insert_one({
+            'username': 'admin',
+            'email': 'admin@surveillance.com',
+            'password': hashed,
+            'role': 'admin',
+            'full_name': 'Administrateur',
+            'created_at': datetime.utcnow(),
+            'updated_at': datetime.utcnow(),
+        })
+        log.info("ADMIN CREATED: admin@surveillance.com / admin123")
+
 def seed_demo_camera():
     """Insérer une caméra de rue de démonstration si aucune n'existe."""
     if db.camera.count_documents({}) == 0:
@@ -1097,5 +1112,6 @@ def seed_demo_camera():
 
 if __name__ == '__main__':
     log.info("Demarrage de l'API Flask...")
+    seed_admin()
     seed_demo_camera()
     app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
