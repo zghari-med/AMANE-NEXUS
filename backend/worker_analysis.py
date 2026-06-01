@@ -20,9 +20,10 @@ os.makedirs(CAPTURES_DIR, exist_ok=True)
 
 # ── Seuils calibrés (valeurs originales validées) ────────────────────────
 FALL_RATIO_THRESHOLD = 0.65   # h/w < 0.65 → personne tombée
-FALL_MIN_HEIGHT_PX = 60       # hauteur bbox minimale — exclut têtes partielles (<60px)
-FALL_MIN_WIDTH_PX = 80        # largeur bbox minimale — personne couchée est large
-FALL_MIN_AREA_PX = 6000       # aire bbox minimale — tête ≈ 3000px² exclue
+FALL_MIN_HEIGHT_PX = 50       # hauteur bbox minimale
+FALL_MIN_WIDTH_PX = 80        # largeur bbox minimale
+FALL_MIN_AREA_PX = 5000       # aire bbox minimale
+FALL_EDGE_MARGIN = 20         # marge bord frame — bbox qui touche le bord = personne entrant/sortant
 CROWD_MIN_PERSONS = 5         # 5+ personnes proches = attroupement
 CROWD_PROXIMITY_PX = 200
 ABANDONED_MOVE_PX = 50        # mouvement max (px) pour "immobile"
@@ -186,6 +187,7 @@ def run_analysis(analysis_id: str, video_path: str,
             events_this_frame = []  # (type, risk, bboxes, centers)
 
             # ── Règle 1 : Chute — max 1 alerte par frame ─────────────────
+            frame_h, frame_w = frame.shape[:2]
             if (frame_id - last_alert['fall']) > FALL_COOLDOWN:
                 fallen = []
                 for p in persons:
@@ -194,11 +196,16 @@ def run_analysis(analysis_id: str, video_path: str,
                     w = max(x2 - x1, 1)
                     area = h * w
                     ratio = h / w
-                    # Exclure têtes/corps partiels : bbox trop petite, trop étroite ou trop petite aire
+                    # Exclure personnes entrant/sortant du champ : bbox touche un bord
+                    at_edge = (x1 <= FALL_EDGE_MARGIN
+                               or y1 <= FALL_EDGE_MARGIN
+                               or x2 >= frame_w - FALL_EDGE_MARGIN
+                               or y2 >= frame_h - FALL_EDGE_MARGIN)
                     if (ratio < FALL_RATIO_THRESHOLD
                             and h >= FALL_MIN_HEIGHT_PX
                             and w >= FALL_MIN_WIDTH_PX
-                            and area >= FALL_MIN_AREA_PX):
+                            and area >= FALL_MIN_AREA_PX
+                            and not at_edge):
                         fallen.append(p)
                 if fallen:
                     events_this_frame.append((
