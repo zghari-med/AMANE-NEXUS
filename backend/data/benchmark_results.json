@@ -25,11 +25,11 @@
   "yolo_inference_benchmarks": {
     "description": "Temps d'inférence YOLOv8n mesuré sur 100 frames de résolution 640x640 en mode CPU",
     "samples": 100,
-    "avg_inference_ms": 243.7,
+    "avg_inference_ms": 525.5,
     "min_inference_ms": 154.2,
     "max_inference_ms": 243.7,
     "std_inference_ms": 18.3,
-    "avg_fps": 4.1,
+    "avg_fps": 1.9,
     "effective_fps_with_skip3": 15.6,
     "percentile_95_ms": 228.1,
     "percentile_99_ms": 241.5,
@@ -54,8 +54,10 @@
       "precision_pct": 57.3,
       "recall_pct": 83.5,
       "f1_score": 0.68,
-      "mean_iou": 0.755,
-      "note": "Seuils optimises: conf=0.20, crowd_min=4, move_px=80, min_frames=15. Chute validee sur URFD 70 videos, Foule sur 135 images Roboflow, Abandon sur 200 images Roboflow."
+      "mean_iou": 0.751,
+      "note": "Seuils optimises: conf=0.2, crowd_min=4, move_px=80, min_frames=15. mAP@0.5 calcule via courbe PR (11-point interpolation VOC2007).",
+      "accuracy_pct": 57.7,
+      "map_50": 0.82
     }
   },
   "by_behavior": {
@@ -79,7 +81,10 @@
         "best_metric": "Recall = 100% — aucune chute manquée sur 70 vidéos réelles",
         "true_positives": 30,
         "false_positives": 40,
-        "false_negatives": 0
+        "false_negatives": 0,
+        "true_negatives": 30,
+        "accuracy_pct": 60.0,
+        "ap_50": 0.998
       },
       "notes": "Seuil calibré empiriquement. Personnes debout ratio ~2.5-3.5, tombées ~0.4-0.6. Recall parfait sur URFD."
     },
@@ -99,8 +104,11 @@
         "precision_pct": 100.0,
         "recall_pct": 89.7,
         "f1_score": 0.946,
-        "mean_iou": 0.631,
-        "best_metric": "F1 = 0.693 — meilleur dataset compatible COCO"
+        "mean_iou": 0.619,
+        "best_metric": "F1 = 0.693 — meilleur dataset compatible COCO",
+        "true_negatives": 0,
+        "accuracy_pct": 89.7,
+        "ap_50": 1.0
       },
       "notes": "Seuil 5 personnes optimal pour surveillance urbaine. Classe 'person' compatible COCO."
     },
@@ -132,7 +140,10 @@
         "f1_score": 0.527,
         "mean_iou": 0.854,
         "best_metric": "IoU = 0.849 — localisation très précise des objets",
-        "improvement": "F1 amélioré de 0.031 à 0.588 en utilisant classes COCO compatibles"
+        "improvement": "F1 amélioré de 0.031 à 0.588 en utilisant classes COCO compatibles",
+        "true_negatives": 33,
+        "accuracy_pct": 43.4,
+        "ap_50": 0.463
       },
       "notes": "Classes restreintes aux objets portables: backpack(24), handbag(26), suitcase(28)..."
     }
