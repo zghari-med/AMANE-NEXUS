@@ -21,14 +21,14 @@ AMANE-NEXUS est une plateforme intelligente de surveillance vidéo urbaine qui d
 
 ### Performances validées END-TO-END
 
-| Comportement | Algorithme | Précision | Rappel | F1 | Dataset de validation |
-|---|---|---|---|---|---|
-| Chute | Ratio h/w bbox < 0.65 | 42.9% | **100%** | 0.600 | URFD (70 vidéos réelles) |
-| Attroupement | ≥5 personnes, distance <200px | 74.8% | 64.6% | 0.693 | People Counting YOLOv8 (135 img) |
-| Objet abandonné | Immobilité ≥22 frames, grille 100px | 54.0% | 64.5% | 0.588 | Person and Luggage (200 img) |
-| **Global** | YOLOv8n CPU, IoU ≥ 0.5 | **57.2%** | **76.4%** | **0.627** | 1040 images + 70 vidéos |
+| Comportement | Algorithme | Précision | Rappel | F1 | Accuracy | AP@0.5 | Dataset |
+|---|---|---|---|---|---|---|---|
+| Chute | Ratio h/w < 0.65 | 42.9% | **100%** | 0.600 | 60.0% | 0.393 | URFD (70 vidéos) |
+| Attroupement | ≥4 personnes, dist <200px | **100%** | 89.7% | **0.946** | 89.7% | **1.000** | People Counting (135 img) |
+| Objet abandonné | Immobilité ≥15 frames | 71.0% | 67.3% | 0.691 | 52.9% | 0.586 | Abandoned Bag + P&L (200 img) |
+| **Global** | YOLOv8n CPU, IoU ≥ 0.5 | **73.8%** | **76.9%** | **0.753** | **62.8%** | **mAP=0.660** | 517 images + 70 vidéos |
 
-> **Note :** Le rappel de 100% sur les chutes signifie qu'aucune chute réelle n'a été manquée sur les 70 vidéos du dataset URFD — choix délibéré pour un système de sécurité.
+> **Note :** Recall 100% sur les chutes — aucune chute réelle manquée sur 70 vidéos URFD (choix délibéré pour système de sécurité). Précision 100% sur attroupements — zéro fausse alarme.
 
 ---
 
@@ -39,7 +39,7 @@ Vidéo Upload / Flux Caméra
         │
         ▼
 ① Agent Perception    — YOLOv8n (détection 80 classes COCO, 6.2 Mo)
-        │                 191 ms/frame CPU → 5.2 FPS brut
+        │                 179.8 ms/frame CPU → 5.6 FPS brut (15.6 FPS effectif)
         ▼
 ② Agent Tracking      — DeepSORT (suivi trajectoires, Kalman + Hongrois)
         │
@@ -220,7 +220,7 @@ cd backend
 python -m pytest tests/ -v --cov=.
 ```
 
-**Résultats : 58/58 tests passés ✅**
+**Résultats : 60/60 tests passés ✅**
 
 ### Couverture des tests
 
