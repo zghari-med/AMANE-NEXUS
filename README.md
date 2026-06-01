@@ -1,7 +1,7 @@
 # AMANE-NEXUS
 
 **Système de Surveillance Intelligente Multi-Agent**  
-Mohamed Z'GHARI — PFE Master MSID-TAM 2026 — Université Mohammed V de Rabat
+Mohamed Z'GHARI
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)](https://python.org)
 [![React](https://img.shields.io/badge/React-18.2-61DAFB?logo=react)](https://reactjs.org)
@@ -258,11 +258,6 @@ AMANE-NEXUS/
 │   │   └── components/
 │   ├── package.json
 │   └── vite.config.js
-├── docs/
-│   ├── RAPPORT_PFE.md         # Rapport académique complet
-│   └── FAQ_SOUTENANCE.md      # 20 Q&R pour le jury
-├── pfe/
-│   └── AMANE_SLIDES_DEFENSE.pptx   # Présentation 12 slides
 ├── .github/
 │   └── workflows/ci.yml       # Pipeline CI/CD
 ├── Dockerfile
@@ -288,8 +283,7 @@ AMANE-NEXUS/
 
 ## Auteur
 
-**Mohamed Z'GHARI** — Master MSID-TAM, Université Mohammed V de Rabat  
-Encadrant : Faculté des Sciences — 2026
+**Mohamed Z'GHARI** 
 
 ---
 
