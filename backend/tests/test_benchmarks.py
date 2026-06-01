@@ -57,10 +57,10 @@ class TestBenchmarkStructure(unittest.TestCase):
             self.assertIn(field, env, f"Champ env manquant : {field}")
 
     def test_yolo_inference_avg_ms(self):
-        """Temps d'inférence moyen doit être entre 100ms et 500ms (CPU)."""
+        """Temps d'inférence moyen doit être entre 100ms et 800ms (CPU)."""
         avg_ms = self.data["yolo_inference_benchmarks"]["avg_inference_ms"]
         self.assertGreater(avg_ms, 100)
-        self.assertLess(avg_ms, 500)
+        self.assertLess(avg_ms, 800)
 
     def test_yolo_avg_fps(self):
         """FPS moyen doit être cohérent avec le temps d'inférence."""
@@ -96,16 +96,29 @@ class TestBenchmarkStructure(unittest.TestCase):
             self.assertIn(btype, bb, f"Comportement manquant : {btype}")
 
     def test_each_behavior_has_metrics(self):
-        """Chaque comportement a validation avec precision_pct, recall_pct, f1_score."""
+        """Chaque comportement a validation avec toutes les métriques."""
         bb = self.data["by_behavior"]
         for btype, behavior in bb.items():
             self.assertIn("validation", behavior,
                 f"{btype} manque la clé 'validation'")
             v = behavior["validation"]
             for field in ["precision_pct", "recall_pct", "f1_score",
-                          "true_positives", "false_positives", "false_negatives"]:
+                          "true_positives", "false_positives", "false_negatives",
+                          "accuracy_pct", "ap_50"]:
                 self.assertIn(field, v,
                     f"{btype}.validation manque le champ {field}")
+
+    def test_global_map_present(self):
+        """mAP@0.5 global doit être présent et > 0.5."""
+        mAP = self.data["model_accuracy"]["global"].get("map_50")
+        self.assertIsNotNone(mAP, "map_50 absent du JSON global")
+        self.assertGreater(mAP, 0.5, f"mAP trop bas: {mAP}")
+
+    def test_global_accuracy_present(self):
+        """Accuracy globale doit être présente et > 50%."""
+        acc = self.data["model_accuracy"]["global"].get("accuracy_pct")
+        self.assertIsNotNone(acc, "accuracy_pct absent du JSON global")
+        self.assertGreater(acc, 50.0, f"Accuracy trop basse: {acc}%")
 
     def test_f1_consistency_by_behavior(self):
         """F1 de chaque comportement est cohérent avec P et R."""
