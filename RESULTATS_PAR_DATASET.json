@@ -1,0 +1,205 @@
+{
+  "timestamp": "2026-06-01T16:10:26.342784",
+  "results": {
+    "URFD": {
+      "name": "URFD",
+      "behavior": "chutes",
+      "total_images": 70,
+      "tested": 70,
+      "TP": 30,
+      "FP": 40,
+      "FN": 0,
+      "TN": 0,
+      "precision": 0.429,
+      "recall": 1.0,
+      "f1": 0.6,
+      "accuracy": 0.429
+    },
+    "Abandoned_Bag_v1i_yolov8__3_": {
+      "name": "Abandoned_Bag_v1i_yolov8__3_",
+      "behavior": "objets_abandonnes",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\Abandoned_Bag_v1i_yolov8__3_",
+      "classes": [
+        "luggage"
+      ],
+      "total_images": 973,
+      "tested": 200,
+      "imgs_with_gt": 196,
+      "TP": 149,
+      "FP": 184,
+      "FN": 64,
+      "precision": 0.447,
+      "recall": 0.7,
+      "f1": 0.546,
+      "mean_iou": 0.846
+    },
+    "Abandoned_Bags_v3i_yolov8": {
+      "name": "Abandoned_Bags_v3i_yolov8",
+      "behavior": "objets_abandonnes",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\Abandoned_Bags_v3i_yolov8",
+      "classes": [
+        "luggage"
+      ],
+      "total_images": 2028,
+      "tested": 200,
+      "imgs_with_gt": 200,
+      "TP": 142,
+      "FP": 159,
+      "FN": 80,
+      "precision": 0.472,
+      "recall": 0.64,
+      "f1": 0.543,
+      "mean_iou": 0.824
+    },
+    "Abandoned_Object_Detection_v2_version1_yolov8": {
+      "name": "Abandoned_Object_Detection_v2_version1_yolov8",
+      "behavior": "objets_abandonnes",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\Abandoned_Object_Detection_v2_version1_yolov8",
+      "classes": [
+        "Bag"
+      ],
+      "total_images": 272,
+      "tested": 200,
+      "imgs_with_gt": 182,
+      "TP": 15,
+      "FP": 773,
+      "FN": 168,
+      "precision": 0.019,
+      "recall": 0.082,
+      "f1": 0.031,
+      "mean_iou": 0.608
+    },
+    "Crowd_Detection_Object_v1_crowd_detection_segmentation_version_3_yolov8": {
+      "name": "Crowd_Detection_Object_v1_crowd_detection_segmentation_version_3_yolov8",
+      "behavior": "attroupements",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\Crowd_Detection_Object_v1_crowd_detection_segmentation_version_3_yolov8",
+      "classes": [
+        "Human"
+      ],
+      "total_images": 1399,
+      "tested": 200,
+      "imgs_with_gt": 199,
+      "TP": 3,
+      "FP": 2404,
+      "FN": 1406,
+      "precision": 0.001,
+      "recall": 0.002,
+      "f1": 0.002,
+      "mean_iou": 0.57
+    },
+    "Crowd_detection_v2i_yolov8": {
+      "name": "Crowd_detection_v2i_yolov8",
+      "behavior": "attroupements",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\Crowd_detection_v2i_yolov8",
+      "classes": [
+        "person"
+      ],
+      "total_images": 181,
+      "tested": 181,
+      "imgs_with_gt": 168,
+      "TP": 1474,
+      "FP": 258,
+      "FN": 7723,
+      "precision": 0.851,
+      "recall": 0.16,
+      "f1": 0.27,
+      "mean_iou": 0.795
+    },
+    "People_counting_v1i_yolov8": {
+      "name": "People_counting_v1i_yolov8",
+      "behavior": "inconnu",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\People_counting_v1i_yolov8",
+      "classes": [
+        "people-counting"
+      ],
+      "total_images": 135,
+      "tested": 135,
+      "imgs_with_gt": 135,
+      "TP": 695,
+      "FP": 234,
+      "FN": 381,
+      "precision": 0.748,
+      "recall": 0.646,
+      "f1": 0.693,
+      "mean_iou": 0.691
+    },
+    "Person_and_luggage_v1i_yolov8": {
+      "name": "Person_and_luggage_v1i_yolov8",
+      "behavior": "inconnu",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\Person_and_luggage_v1i_yolov8",
+      "classes": [
+        "backpack",
+        "handbag",
+        "luggage",
+        "person",
+        "suitcase"
+      ],
+      "total_images": 1204,
+      "tested": 200,
+      "imgs_with_gt": 200,
+      "TP": 176,
+      "FP": 150,
+      "FN": 97,
+      "precision": 0.54,
+      "recall": 0.645,
+      "f1": 0.588,
+      "mean_iou": 0.849
+    },
+    "UR_Fall_v1i_yolov8": {
+      "name": "UR_Fall_v1i_yolov8",
+      "behavior": "chutes",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\UR_Fall_v1i_yolov8",
+      "classes": [
+        "fall",
+        "person"
+      ],
+      "total_images": 2000,
+      "tested": 200,
+      "imgs_with_gt": 199,
+      "TP": 166,
+      "FP": 245,
+      "FN": 33,
+      "precision": 0.404,
+      "recall": 0.834,
+      "f1": 0.544,
+      "mean_iou": 0.886
+    },
+    "crowdhuman_v1i_yolov8": {
+      "name": "crowdhuman_v1i_yolov8",
+      "behavior": "attroupements",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\crowdhuman_v1i_yolov8",
+      "classes": [
+        "0",
+        "1"
+      ],
+      "total_images": 3001,
+      "tested": 200,
+      "imgs_with_gt": 200,
+      "TP": 1664,
+      "FP": 1143,
+      "FN": 6672,
+      "precision": 0.593,
+      "recall": 0.2,
+      "f1": 0.299,
+      "mean_iou": 0.782
+    },
+    "people_counting_yolov8_v6i_yolov8": {
+      "name": "people_counting_yolov8_v6i_yolov8",
+      "behavior": "inconnu",
+      "path": "D:\\surveillance_project\\backend\\data\\datasets\\people_counting_yolov8_v6i_yolov8",
+      "classes": [
+        "person"
+      ],
+      "total_images": 535,
+      "tested": 200,
+      "imgs_with_gt": 200,
+      "TP": 159,
+      "FP": 266,
+      "FN": 41,
+      "precision": 0.374,
+      "recall": 0.795,
+      "f1": 0.509,
+      "mean_iou": 0.799
+    }
+  }
+}

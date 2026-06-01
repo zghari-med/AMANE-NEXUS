@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { API } from '../services/api'
 
 export const useAuthStore = create(
   persist(
@@ -12,7 +13,7 @@ export const useAuthStore = create(
       login: async (email, password) => {
         set({ isLoading: true, error: null })
         try {
-          const response = await fetch('/api/auth/login', {
+          const response = await fetch(`${API}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -34,7 +35,7 @@ export const useAuthStore = create(
       register: async (email, password, username, fullName) => {
         set({ isLoading: true, error: null })
         try {
-          const response = await fetch('/api/auth/register', {
+          const response = await fetch(`${API}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password, username, full_name: fullName })
@@ -57,7 +58,7 @@ export const useAuthStore = create(
         // Notify backend for activity logging
         const currentToken = get().token
         if (currentToken) {
-          fetch('/api/auth/logout', {
+          fetch(`${API}/api/auth/logout`, {
             method: 'POST',
             headers: { Authorization: `Bearer ${currentToken}` }
           }).catch(() => {}) // Fire-and-forget

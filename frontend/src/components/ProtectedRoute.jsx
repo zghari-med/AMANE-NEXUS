@@ -1,10 +1,21 @@
 import { Navigate } from 'react-router-dom'
 import { useAuthStore } from '../context/authStore'
 
-export default function ProtectedRoute({ children, requiredRole = null }) {
-  const { user, token } = useAuthStore()
+function isTokenExpired(token) {
+  if (!token) return true
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
+}
 
-  if (!token || !user) {
+export default function ProtectedRoute({ children, requiredRole = null }) {
+  const { user, token, logout } = useAuthStore()
+
+  if (!token || !user || isTokenExpired(token)) {
+    if (token) logout()
     return <Navigate to="/login" replace />
   }
 
