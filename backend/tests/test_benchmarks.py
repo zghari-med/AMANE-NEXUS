@@ -71,23 +71,23 @@ class TestBenchmarkStructure(unittest.TestCase):
         self.assertAlmostEqual(avg_fps, expected_fps, delta=1.0,
             msg=f"FPS incohérent : {avg_fps} vs {expected_fps:.1f} attendu")
 
-    def test_global_f1_equals_0857(self):
-        """F1-score global doit être 0.857 (±0.01)."""
+    def test_global_f1_equals_0627(self):
+        """F1-score global doit être 0.627 (±0.01) — validé END-TO-END."""
         f1 = self.data["model_accuracy"]["global"]["f1_score"]
-        self.assertAlmostEqual(f1, 0.857, delta=0.01,
-            msg=f"F1 attendu 0.857, obtenu {f1}")
+        self.assertAlmostEqual(f1, 0.627, delta=0.01,
+            msg=f"F1 attendu 0.627, obtenu {f1}")
 
     def test_global_precision(self):
-        """Précision globale doit être 94.5% (±0.5)."""
+        """Précision globale doit être 57.2% (±0.5)."""
         precision = self.data["model_accuracy"]["global"]["precision_pct"]
-        self.assertAlmostEqual(precision, 94.5, delta=0.5,
-            msg=f"Précision attendue 94.5%, obtenu {precision}%")
+        self.assertAlmostEqual(precision, 57.2, delta=0.5,
+            msg=f"Précision attendue 57.2%, obtenu {precision}%")
 
     def test_global_recall(self):
-        """Rappel global doit être 83.3% (±0.5)."""
+        """Rappel global doit être 76.4% (±0.5)."""
         recall = self.data["model_accuracy"]["global"]["recall_pct"]
-        self.assertAlmostEqual(recall, 83.3, delta=0.5,
-            msg=f"Rappel attendu 83.3%, obtenu {recall}%")
+        self.assertAlmostEqual(recall, 76.4, delta=0.5,
+            msg=f"Rappel attendu 76.4%, obtenu {recall}%")
 
     def test_by_behavior_has_three_types(self):
         """by_behavior doit contenir fall, crowding, abandoned_object."""
@@ -96,24 +96,28 @@ class TestBenchmarkStructure(unittest.TestCase):
             self.assertIn(btype, bb, f"Comportement manquant : {btype}")
 
     def test_each_behavior_has_metrics(self):
-        """Chaque comportement a precision_pct, recall_pct, f1_score."""
+        """Chaque comportement a validation avec precision_pct, recall_pct, f1_score."""
         bb = self.data["by_behavior"]
-        for btype, metrics in bb.items():
+        for btype, behavior in bb.items():
+            self.assertIn("validation", behavior,
+                f"{btype} manque la clé 'validation'")
+            v = behavior["validation"]
             for field in ["precision_pct", "recall_pct", "f1_score",
                           "true_positives", "false_positives", "false_negatives"]:
-                self.assertIn(field, metrics,
-                    f"{btype} manque le champ {field}")
+                self.assertIn(field, v,
+                    f"{btype}.validation manque le champ {field}")
 
     def test_f1_consistency_by_behavior(self):
         """F1 de chaque comportement est cohérent avec P et R."""
         bb = self.data["by_behavior"]
-        for btype, metrics in bb.items():
-            p = metrics["precision_pct"] / 100
-            r = metrics["recall_pct"] / 100
+        for btype, behavior in bb.items():
+            v = behavior["validation"]
+            p = v["precision_pct"] / 100
+            r = v["recall_pct"] / 100
             if (p + r) > 0:
                 expected_f1 = 2 * p * r / (p + r)
                 self.assertAlmostEqual(
-                    metrics["f1_score"], expected_f1, delta=0.01,
+                    v["f1_score"], expected_f1, delta=0.01,
                     msg=f"F1 incohérent pour {btype}"
                 )
 
@@ -129,11 +133,11 @@ class TestBenchmarkLoader(unittest.TestCase):
         self.assertGreater(len(data), 0)
 
     def test_benchmark_loader_has_f1(self):
-        """BenchmarkLoader expose bien le F1=0.857."""
+        """BenchmarkLoader expose bien le F1=0.627 (validé END-TO-END)."""
         from services.analytics_service import BenchmarkLoader
         data = BenchmarkLoader.get_or_load()
         f1 = data["model_accuracy"]["global"]["f1_score"]
-        self.assertAlmostEqual(f1, 0.857, delta=0.01)
+        self.assertAlmostEqual(f1, 0.627, delta=0.01)
 
     def test_benchmark_loader_caches(self):
         """Deux appels successifs retournent le même objet (cache)."""
