@@ -24,11 +24,11 @@ AMANE-NEXUS est une plateforme intelligente de surveillance vidéo urbaine qui d
 | Comportement | Algorithme | Précision | Rappel | F1 | Accuracy | AP@0.5 | Dataset |
 |---|---|---|---|---|---|---|---|
 | Chute | Ratio h/w < 0.65 + filtres bbox | 42.9% | **100%** | 0.600 | 60.0% | 0.393 | URFD (70 vidéos) |
-| Attroupement | ≥5 personnes, dist <200px | **98.4%** | 60.4% | 0.748 | 65.0% | 0.892 | People Counting (135 img) |
+| Attroupement | ≥8 personnes, dist <200px | **98.4%** | 60.4% | 0.748 | 65.0% | 0.892 | People Counting (135 img) |
 | Objet abandonné | Immobilité ≥22 frames, grille 100px | 74.5% | 61.9% | 0.676 | 51.3% | 0.586 | Abandoned Bag + P&L (200 img) |
 | **Global** | YOLOv8n CPU, IoU ≥ 0.5 | **72.2%** | **64.7%** | **0.682** | **56.3%** | **mAP=0.624** | 517 images + 70 vidéos |
 
-> **Note :** Recall 100% sur les chutes — aucune chute réelle manquée sur 70 vidéos URFD (choix délibéré pour système de sécurité). Précision 98.4% sur attroupements — quasi-zéro fausse alarme en production.
+> **Note :** Recall 100% sur les chutes — aucune chute réelle manquée sur 70 vidéos URFD. Précision 98.4% attroupements — seuil 8 personnes calibré empiriquement. Logique anti-duplication : alerte uniquement sur **apparition** de la foule (pas pendant sa persistance).
 
 ---
 
@@ -58,12 +58,18 @@ Vidéo Upload / Flux Caméra
 | Paramètre | Valeur | Rôle |
 |---|---|---|
 | `FALL_RATIO` | 0.65 | Seuil ratio h/w pour détecter une chute |
-| `FALL_COOLDOWN` | 300 frames | Anti-doublon chute |
-| `CROWD_MIN` | 5 personnes | Seuil déclenchement attroupement |
+| `FALL_MIN_HEIGHT` | 50 px | Hauteur minimale bbox — exclut têtes partielles |
+| `FALL_MIN_WIDTH` | 80 px | Largeur minimale bbox — exclut détections fragmentées |
+| `FALL_MIN_AREA` | 5000 px² | Aire minimale bbox — exclut personnes hors champ |
+| `FALL_EDGE_MARGIN` | 20 px | Marge bord frame — ignore entrées/sorties du champ |
+| `FALL_COOLDOWN` | 300 frames | Anti-doublon chute (~10s à 30fps) |
+| `CROWD_MIN` | **8 personnes** | Seuil déclenchement attroupement |
 | `CROWD_PROXIMITY` | 200 px | Distance max entre personnes |
 | `CROWD_COOLDOWN` | 90 frames | Anti-doublon attroupement |
+| `CROWD_GRACE_FRAMES` | 5 frames | Délai avant reset — absorbe fluctuations YOLO |
 | `STATIONARY_THR` | 22 frames | Immobilité pour objet abandonné |
-| `ABANDON_COOLDOWN` | 900 frames | Anti-doublon objet |
+| `MOVE_THRESHOLD` | 50 px | Déplacement max considéré comme immobile |
+| `ABANDON_COOLDOWN` | 900 frames | Anti-doublon objet (~30s à 30fps) |
 | `GRID_SZ` | 100 px | Résolution grille spatiale |
 | `FRAME_SKIP` | 3 | Traitement 1 frame/4 (optimisation CPU) |
 | `CONFIDENCE` | 0.25 | Seuil confiance YOLO |
