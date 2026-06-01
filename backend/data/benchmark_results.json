@@ -9,7 +9,6 @@
     "total_images_tested": 1040,
     "total_videos_tested": 70
   },
-
   "environment": {
     "os": "Windows 10 x64",
     "python_version": "3.10.0",
@@ -23,7 +22,6 @@
     "input_resolution": "640x640",
     "device": "cpu"
   },
-
   "yolo_inference_benchmarks": {
     "description": "Temps d'inférence YOLOv8n mesuré sur 100 frames de résolution 640x640 en mode CPU",
     "samples": 100,
@@ -37,7 +35,6 @@
     "percentile_99_ms": 241.5,
     "note": "FRAME_SKIP=3 réduit la charge CPU de ~67% tout en maintenant une couverture temporelle adéquate"
   },
-
   "model_accuracy": {
     "description": "Métriques validées END-TO-END sur datasets annotés réels (Roboflow Universe + URFD)",
     "methodology": "Test YOLOv8n sur images/vidéos annotées — calcul TP/FP/FN par IoU >= 0.5",
@@ -61,7 +58,6 @@
       "note": "Moyenne sur les 3 comportements avec meilleurs datasets"
     }
   },
-
   "by_behavior": {
     "fall": {
       "label": "Chute détectée",
@@ -78,9 +74,12 @@
         "false_negatives_videos": 0,
         "precision_pct": 42.9,
         "recall_pct": 100.0,
-        "f1_score": 0.600,
+        "f1_score": 0.6,
         "mean_iou": 0.886,
-        "best_metric": "Recall = 100% — aucune chute manquée sur 70 vidéos réelles"
+        "best_metric": "Recall = 100% — aucune chute manquée sur 70 vidéos réelles",
+        "true_positives": 30,
+        "false_positives": 40,
+        "false_negatives": 0
       },
       "notes": "Seuil calibré empiriquement. Personnes debout ratio ~2.5-3.5, tombées ~0.4-0.6. Recall parfait sur URFD."
     },
@@ -112,7 +111,15 @@
       "move_threshold_px": 50,
       "grid_cell_px": 100,
       "cooldown_frames": 900,
-      "object_classes": [24, 25, 26, 28, 36, 39, 67],
+      "object_classes": [
+        24,
+        25,
+        26,
+        28,
+        36,
+        39,
+        67
+      ],
       "validation": {
         "primary_dataset": "Person and Luggage (Roboflow)",
         "secondary_dataset": "Abandoned Bag Pro Elec (Roboflow)",
@@ -130,29 +137,91 @@
       "notes": "Classes restreintes aux objets portables: backpack(24), handbag(26), suitcase(28)..."
     }
   },
-
   "datasets_tested": {
     "summary": "11 datasets testés au total pour trouver les meilleurs",
     "fall_datasets": [
-      {"name": "URFD", "images": 70, "f1": 0.600, "recall": 1.000, "selected": true},
-      {"name": "UR Fall v1i (Roboflow)", "images": 200, "f1": 0.544, "iou": 0.886, "selected": true},
-      {"name": "Fall Detection v4 (Roboflow)", "images": 200, "f1": 0.135, "selected": false},
-      {"name": "FallDatasets v4i (Roboflow)", "images": 200, "f1": 0.339, "selected": false},
-      {"name": "Fall Detection v1i (Roboflow)", "images": 200, "f1": 0.335, "selected": false}
+      {
+        "name": "URFD",
+        "images": 70,
+        "f1": 0.6,
+        "recall": 1.0,
+        "selected": true
+      },
+      {
+        "name": "UR Fall v1i (Roboflow)",
+        "images": 200,
+        "f1": 0.544,
+        "iou": 0.886,
+        "selected": true
+      },
+      {
+        "name": "Fall Detection v4 (Roboflow)",
+        "images": 200,
+        "f1": 0.135,
+        "selected": false
+      },
+      {
+        "name": "FallDatasets v4i (Roboflow)",
+        "images": 200,
+        "f1": 0.339,
+        "selected": false
+      },
+      {
+        "name": "Fall Detection v1i (Roboflow)",
+        "images": 200,
+        "f1": 0.335,
+        "selected": false
+      }
     ],
     "crowd_datasets": [
-      {"name": "People Counting YOLOv8", "images": 135, "f1": 0.693, "selected": true},
-      {"name": "People Counting v6i", "images": 200, "f1": 0.509, "selected": true},
-      {"name": "CrowdHuman (Roboflow)", "images": 200, "f1": 0.299, "selected": false},
-      {"name": "Crowd Detection CCTV", "images": 200, "f1": 0.002, "selected": false}
+      {
+        "name": "People Counting YOLOv8",
+        "images": 135,
+        "f1": 0.693,
+        "selected": true
+      },
+      {
+        "name": "People Counting v6i",
+        "images": 200,
+        "f1": 0.509,
+        "selected": true
+      },
+      {
+        "name": "CrowdHuman (Roboflow)",
+        "images": 200,
+        "f1": 0.299,
+        "selected": false
+      },
+      {
+        "name": "Crowd Detection CCTV",
+        "images": 200,
+        "f1": 0.002,
+        "selected": false
+      }
     ],
     "abandoned_datasets": [
-      {"name": "Person and Luggage (Roboflow)", "images": 200, "f1": 0.588, "iou": 0.849, "selected": true},
-      {"name": "Abandoned Bag Pro Elec", "images": 200, "f1": 0.546, "iou": 0.846, "selected": true},
-      {"name": "Abandoned Object Detection v2", "images": 200, "f1": 0.031, "selected": false}
+      {
+        "name": "Person and Luggage (Roboflow)",
+        "images": 200,
+        "f1": 0.588,
+        "iou": 0.849,
+        "selected": true
+      },
+      {
+        "name": "Abandoned Bag Pro Elec",
+        "images": 200,
+        "f1": 0.546,
+        "iou": 0.846,
+        "selected": true
+      },
+      {
+        "name": "Abandoned Object Detection v2",
+        "images": 200,
+        "f1": 0.031,
+        "selected": false
+      }
     ]
   },
-
   "processing_benchmarks": {
     "video_cam1": {
       "duration_s": 13.0,
@@ -171,7 +240,6 @@
       "events_detected": 2
     }
   },
-
   "system_benchmarks": {
     "api_response_time_ms": {
       "login": 42,
@@ -186,7 +254,6 @@
       "statistics_aggregate": 28.7
     }
   },
-
   "calibration_history": [
     {
       "date": "2026-05-27",
