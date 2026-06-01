@@ -23,12 +23,12 @@ AMANE-NEXUS est une plateforme intelligente de surveillance vidéo urbaine qui d
 
 | Comportement | Algorithme | Précision | Rappel | F1 | Accuracy | AP@0.5 | Dataset |
 |---|---|---|---|---|---|---|---|
-| Chute | Ratio h/w < 0.65 | 42.9% | **100%** | 0.600 | 60.0% | 0.393 | URFD (70 vidéos) |
-| Attroupement | ≥4 personnes, dist <200px | **100%** | 89.7% | **0.946** | 89.7% | **1.000** | People Counting (135 img) |
-| Objet abandonné | Immobilité ≥15 frames | 71.0% | 67.3% | 0.691 | 52.9% | 0.586 | Abandoned Bag + P&L (200 img) |
-| **Global** | YOLOv8n CPU, IoU ≥ 0.5 | **73.8%** | **76.9%** | **0.753** | **62.8%** | **mAP=0.660** | 517 images + 70 vidéos |
+| Chute | Ratio h/w < 0.65 + filtres bbox | 42.9% | **100%** | 0.600 | 60.0% | 0.393 | URFD (70 vidéos) |
+| Attroupement | ≥5 personnes, dist <200px | **98.4%** | 60.4% | 0.748 | 65.0% | 0.892 | People Counting (135 img) |
+| Objet abandonné | Immobilité ≥22 frames, grille 100px | 74.5% | 61.9% | 0.676 | 51.3% | 0.586 | Abandoned Bag + P&L (200 img) |
+| **Global** | YOLOv8n CPU, IoU ≥ 0.5 | **72.2%** | **64.7%** | **0.682** | **56.3%** | **mAP=0.624** | 517 images + 70 vidéos |
 
-> **Note :** Recall 100% sur les chutes — aucune chute réelle manquée sur 70 vidéos URFD (choix délibéré pour système de sécurité). Précision 100% sur attroupements — zéro fausse alarme.
+> **Note :** Recall 100% sur les chutes — aucune chute réelle manquée sur 70 vidéos URFD (choix délibéré pour système de sécurité). Précision 98.4% sur attroupements — quasi-zéro fausse alarme en production.
 
 ---
 
@@ -39,7 +39,7 @@ Vidéo Upload / Flux Caméra
         │
         ▼
 ① Agent Perception    — YOLOv8n (détection 80 classes COCO, 6.2 Mo)
-        │                 179.8 ms/frame CPU → 5.6 FPS brut (15.6 FPS effectif)
+        │                 156.6 ms/frame CPU → 6.4 FPS brut (15.6 FPS effectif)
         ▼
 ② Agent Tracking      — DeepSORT (suivi trajectoires, Kalman + Hongrois)
         │
