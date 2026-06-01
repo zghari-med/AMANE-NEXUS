@@ -24,7 +24,7 @@ FALL_MIN_HEIGHT_PX = 50       # hauteur bbox minimale
 FALL_MIN_WIDTH_PX = 80        # largeur bbox minimale
 FALL_MIN_AREA_PX = 5000       # aire bbox minimale
 FALL_EDGE_MARGIN = 20         # marge bord frame — bbox qui touche le bord = personne entrant/sortant
-CROWD_MIN_PERSONS = 5         # 5+ personnes proches = attroupement
+CROWD_MIN_PERSONS = 8         # 8+ personnes proches = attroupement
 CROWD_PROXIMITY_PX = 200
 ABANDONED_MOVE_PX = 50        # mouvement max (px) pour "immobile"
 ABANDONED_MIN_FRAMES = 22     # frames traitées immobiles avant alerte
