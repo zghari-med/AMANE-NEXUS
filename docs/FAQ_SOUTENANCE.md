@@ -22,7 +22,7 @@ Il est pertinent car il pénalise les systèmes qui maximisent l'une aux dépens
 - **Faux positif (FP)** : alerte intempestive → fatigue de l'opérateur
 - **Faux négatif (FN)** : incident manqué → danger non détecté
 
-Notre système obtient F1 = **0.857** (85.7%), ce qui indique un bon équilibre entre Précision (94.5%) et Rappel (83.3%).
+Notre système obtient F1 = **0.627** validé sur 11 datasets annotés réels, avec Recall = **100%** sur les chutes (URFD) et F1 = **0.693** pour les attroupements.
 
 ---
 
@@ -87,7 +87,12 @@ Notre architecture sépare les responsabilités : l'agent YOLO ne connaît pas l
 - **Précision** = TP / (TP + FP) : "Parmi toutes nos alertes, combien étaient réelles ?" → mesure la qualité des détections positives
 - **Rappel** = TP / (TP + FN) : "Parmi tous les incidents réels, combien avons-nous détectés ?" → mesure la complétude
 
-Notre système : Précision = 94.5% (peu de fausses alertes), Rappel = 83.3% (quelques incidents manqués). Pour la surveillance, le rappel est critique car un incident manqué peut être dangereux.
+Notre système validé sur 11 datasets réels :
+- **Chutes** : Précision = 42.9%, Rappel = **100%** → aucune chute manquée (URFD, 70 vidéos)
+- **Attroupements** : Précision = **74.8%**, Rappel = 64.6% (People Counting, 135 images)
+- **Objets abandonnés** : Précision = 54.0%, Rappel = 64.5% (Person+Luggage, 200 images)
+
+Pour la surveillance, le **rappel est critique** : un incident manqué peut être dangereux. Notre Recall=100% sur les chutes valide ce critère.
 
 ---
 
