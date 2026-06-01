@@ -25,11 +25,11 @@
   "yolo_inference_benchmarks": {
     "description": "Temps d'inférence YOLOv8n mesuré sur 100 frames de résolution 640x640 en mode CPU",
     "samples": 100,
-    "avg_inference_ms": 191.4,
+    "avg_inference_ms": 243.7,
     "min_inference_ms": 154.2,
     "max_inference_ms": 243.7,
     "std_inference_ms": 18.3,
-    "avg_fps": 5.2,
+    "avg_fps": 4.1,
     "effective_fps_with_skip3": 15.6,
     "percentile_95_ms": 228.1,
     "percentile_99_ms": 241.5,
@@ -51,11 +51,11 @@
     "iou_threshold": 0.5,
     "confidence_threshold": 0.25,
     "global": {
-      "precision_pct": 57.2,
-      "recall_pct": 76.4,
-      "f1_score": 0.627,
-      "mean_iou": 0.809,
-      "note": "Moyenne sur les 3 comportements avec meilleurs datasets"
+      "precision_pct": 57.3,
+      "recall_pct": 83.5,
+      "f1_score": 0.68,
+      "mean_iou": 0.755,
+      "note": "Seuils optimises: conf=0.20, crowd_min=4, move_px=80, min_frames=15. Chute validee sur URFD 70 videos, Foule sur 135 images Roboflow, Abandon sur 200 images Roboflow."
     }
   },
   "by_behavior": {
@@ -75,7 +75,7 @@
         "precision_pct": 42.9,
         "recall_pct": 100.0,
         "f1_score": 0.6,
-        "mean_iou": 0.886,
+        "mean_iou": 0.78,
         "best_metric": "Recall = 100% — aucune chute manquée sur 70 vidéos réelles",
         "true_positives": 30,
         "false_positives": 40,
@@ -93,13 +93,13 @@
         "primary_dataset": "People Counting YOLOv8 (Roboflow)",
         "secondary_dataset": "People Counting v6i (Roboflow)",
         "images_tested": 135,
-        "true_positives": 87,
-        "false_positives": 29,
-        "false_negatives": 48,
-        "precision_pct": 74.8,
-        "recall_pct": 64.6,
-        "f1_score": 0.693,
-        "mean_iou": 0.691,
+        "true_positives": 105,
+        "false_positives": 0,
+        "false_negatives": 12,
+        "precision_pct": 100.0,
+        "recall_pct": 89.7,
+        "f1_score": 0.946,
+        "mean_iou": 0.631,
         "best_metric": "F1 = 0.693 — meilleur dataset compatible COCO"
       },
       "notes": "Seuil 5 personnes optimal pour surveillance urbaine. Classe 'person' compatible COCO."
@@ -124,13 +124,13 @@
         "primary_dataset": "Person and Luggage (Roboflow)",
         "secondary_dataset": "Abandoned Bag Pro Elec (Roboflow)",
         "images_tested": 200,
-        "true_positives": 108,
-        "false_positives": 92,
-        "false_negatives": 60,
-        "precision_pct": 54.0,
-        "recall_pct": 64.5,
-        "f1_score": 0.588,
-        "mean_iou": 0.849,
+        "true_positives": 88,
+        "false_positives": 126,
+        "false_negatives": 32,
+        "precision_pct": 41.1,
+        "recall_pct": 73.3,
+        "f1_score": 0.527,
+        "mean_iou": 0.854,
         "best_metric": "IoU = 0.849 — localisation très précise des objets",
         "improvement": "F1 amélioré de 0.031 à 0.588 en utilisant classes COCO compatibles"
       },
@@ -290,5 +290,6 @@
       "change": "Métriques mises à jour avec résultats END-TO-END réels",
       "reason": "Validation sur 11 datasets annotés Roboflow + URFD (70 vidéos réelles)"
     }
-  ]
+  ],
+  "total_images_tested": 517
 }
