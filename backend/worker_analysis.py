@@ -340,7 +340,9 @@ def run_analysis(analysis_id: str, video_path: str,
         client.close()
 
 
-def start_analysis_thread(analysis_id: str, video_path: str):
-    t = threading.Thread(target=run_analysis, args=(analysis_id, video_path), daemon=True)
+def start_analysis_thread(analysis_id: str, video_path: str, mongo_uri: str = None):
+    import os
+    uri = mongo_uri or os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
+    t = threading.Thread(target=run_analysis, args=(analysis_id, video_path, uri), daemon=True)
     t.start()
     return t
