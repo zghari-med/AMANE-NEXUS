@@ -1,111 +1,133 @@
 # AMANE-NEXUS
 
 **Système de Surveillance Intelligente Multi-Agent**  
-Mohamed Z'GHARI
+PFE MSID-TAM — Mohamed Z'GHARI
 
+[![CI/CD](https://github.com/zghari-med/AMANE-NEXUS/actions/workflows/ci.yml/badge.svg)](https://github.com/zghari-med/AMANE-NEXUS/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)](https://python.org)
 [![React](https://img.shields.io/badge/React-18.2-61DAFB?logo=react)](https://reactjs.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
 [![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?logo=mongodb)](https://mongodb.com)
-[![YOLOv8](https://img.shields.io/badge/YOLOv8n-8.1-FF6B6B)](https://ultralytics.com)
+[![YOLOv8](https://img.shields.io/badge/YOLOv8n-CPU-FF6B6B)](https://ultralytics.com)
 [![Docker](https://img.shields.io/badge/Docker-multi--stage-2496ED?logo=docker)](https://docker.com)
-[![Tests](https://img.shields.io/badge/Tests-57%2F57%20passed-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-58%2F58%20passed-brightgreen)](backend/tests/)
+[![License](https://img.shields.io/badge/License-Academic-lightgrey)](LICENSE)
 
 ---
 
 ## Présentation
 
-AMANE-NEXUS est une plateforme intelligente de surveillance vidéo qui détecte automatiquement trois classes de comportements anormaux grâce à l'IA :
+AMANE-NEXUS est une plateforme intelligente de surveillance vidéo urbaine qui détecte automatiquement trois classes de comportements anormaux en temps réel grâce à YOLOv8n et des algorithmes heuristiques calibrés sur des datasets réels annotés.
 
-| Comportement | Algorithme | Précision | Rappel | F1 |
-|---|---|---|---|---|
-| Chute | Ratio h/w bbox < 0.65 | 88.2% | 83.3% | 85.7% |
-| Attroupement | ≥5 personnes, distance <200px | 88.9% | 80.0% | 84.2% |
-| Objet abandonné | Immobilité ≥22 frames traitées | 85.7% | 85.7% | 85.7% |
-| **Global** | YOLOv8n CPU | **94.5%** | **83.3%** | **85.7%** |
+### Performances validées END-TO-END
+
+| Comportement | Algorithme | Précision | Rappel | F1 | Dataset de validation |
+|---|---|---|---|---|---|
+| Chute | Ratio h/w bbox < 0.65 | 42.9% | **100%** | 0.600 | URFD (70 vidéos réelles) |
+| Attroupement | ≥5 personnes, distance <200px | 74.8% | 64.6% | 0.693 | People Counting YOLOv8 (135 img) |
+| Objet abandonné | Immobilité ≥22 frames, grille 100px | 54.0% | 64.5% | 0.588 | Person and Luggage (200 img) |
+| **Global** | YOLOv8n CPU, IoU ≥ 0.5 | **57.2%** | **76.4%** | **0.627** | 1040 images + 70 vidéos |
+
+> **Note :** Le rappel de 100% sur les chutes signifie qu'aucune chute réelle n'a été manquée sur les 70 vidéos du dataset URFD — choix délibéré pour un système de sécurité.
 
 ---
 
 ## Architecture Multi-Agent
 
 ```
-Vidéo Upload
-    │
-    ▼
+Vidéo Upload / Flux Caméra
+        │
+        ▼
 ① Agent Perception    — YOLOv8n (détection 80 classes COCO, 6.2 Mo)
-    │
-    ▼
+        │                 191 ms/frame CPU → 5.2 FPS brut
+        ▼
 ② Agent Tracking      — DeepSORT (suivi trajectoires, Kalman + Hongrois)
-    │
-    ▼
+        │
+        ▼
 ③ Agent Analyse       — Règles heuristiques calibrées empiriquement
-    │
-    ▼
+        │                 (chute · attroupement · objet abandonné)
+        ▼
 ④ Agent Décision      — MongoDB + captures JPEG annotées + cooldowns
-    │
-    ▼
-⑤ Agent Interface     — Flask REST API + React 18 Dashboard
+        │
+        ▼
+⑤ Agent Interface     — Flask REST API (18 endpoints) + React 18 Dashboard
 ```
 
 ### Paramètres de détection
 
 | Paramètre | Valeur | Rôle |
 |---|---|---|
-| `FALL_RATIO` | 0.65 | Seuil ratio h/w pour chute |
+| `FALL_RATIO` | 0.65 | Seuil ratio h/w pour détecter une chute |
 | `FALL_COOLDOWN` | 300 frames | Anti-doublon chute |
-| `CROWD_MIN` | 5 personnes | Seuil attroupement |
+| `CROWD_MIN` | 5 personnes | Seuil déclenchement attroupement |
+| `CROWD_PROXIMITY` | 200 px | Distance max entre personnes |
 | `CROWD_COOLDOWN` | 90 frames | Anti-doublon attroupement |
-| `STATIONARY_THR` | 22 frames | Immobilité objet abandonné |
+| `STATIONARY_THR` | 22 frames | Immobilité pour objet abandonné |
 | `ABANDON_COOLDOWN` | 900 frames | Anti-doublon objet |
-| `GRID_SZ` | 100 px | Grille de détection spatiale |
-| `FRAME_SKIP` | 3 | Traitement 1 frame sur 4 → 15.6 FPS effectifs |
+| `GRID_SZ` | 100 px | Résolution grille spatiale |
+| `FRAME_SKIP` | 3 | Traitement 1 frame/4 (optimisation CPU) |
+| `CONFIDENCE` | 0.25 | Seuil confiance YOLO |
+| `IOU_THRESHOLD` | 0.5 | Seuil IoU pour validation détection |
 
 ---
 
 ## Stack Technique
 
 ### Backend
+
 | Technologie | Version | Rôle |
 |---|---|---|
-| Flask | 3.0.0 | API REST (18 endpoints) |
-| MongoDB | 6.0 | Stockage données |
-| YOLOv8n + OpenCV | 8.1.18 / 4.8.1 | Détection et vision |
-| PyJWT + bcrypt | 2.13.0 / 4.1.2 | Auth JWT |
+| Flask | 3.0.0 | API REST — 18 endpoints |
+| MongoDB | 6.0 | Stockage analyses, alertes, utilisateurs |
+| Redis | 7 | Cache analytics |
+| YOLOv8n | 8.1.18 | Détection objets (CPU-only) |
+| OpenCV | 4.8.1 | Vision par ordinateur |
+| PyJWT | 2.13.0 | Authentification JWT |
+| bcrypt | 4.1.2 | Hachage mots de passe |
 | Pandas | 2.0+ | Analytics et export CSV |
-| python-dotenv | — | Variables d'environnement |
 
 ### Frontend
+
 | Technologie | Version | Rôle |
 |---|---|---|
-| React | 18.2.0 | UI |
-| Tailwind CSS | 3.3.6 | Styles |
-| Recharts | 2.10.3 | Graphiques |
-| Zustand | 4.4.1 | State management |
-| Vite | 5.0.7 | Bundler |
+| React | 18.2.0 | Interface utilisateur |
+| Tailwind CSS | 3.3.6 | Styles utilitaires |
+| Recharts | 2.10.3 | Graphiques et visualisations |
+| Zustand | 4.4.1 | Gestion d'état (JWT store) |
+| Vite | 5.4.x | Bundler |
 
 ### Infrastructure
-- Docker multi-stage (Python 3.10-slim + Node 18-alpine + Nginx)
-- Docker Compose avec healthchecks sur tous les services
-- GitHub Actions CI/CD pipeline (lint → tests → build → docker)
+
+| Composant | Détail |
+|---|---|
+| Docker | Multi-stage build (Python 3.10-slim + Node 18-alpine) |
+| Docker Compose | Healthchecks sur tous les services |
+| CI/CD | GitHub Actions (lint → tests → benchmarks → frontend → docker) |
 
 ---
 
 ## Démarrage Rapide
 
 ### Prérequis
+
 ```
-Python 3.10+  |  Node.js 18+  |  MongoDB 6.0  |  8 Go RAM minimum
+Docker Desktop  |  8 Go RAM minimum  |  4 Go disque libre
 ```
 
 ### Option 1 — Docker (recommandé)
+
 ```bash
-git clone https://github.com/zghari99/AMANE-NEXUS.git
+git clone https://github.com/zghari-med/AMANE-NEXUS.git
 cd AMANE-NEXUS
 docker-compose up -d
-# Accès : http://localhost:3000
 ```
 
+L'application sera disponible sur **http://localhost:3000**
+
+**Identifiants par défaut :** `admin@surveillance.com` / `admin123`
+
 ### Option 2 — Développement local
+
 ```bash
 # Terminal 1 — MongoDB
 mongod --dbpath ./data/db
@@ -117,41 +139,25 @@ venv\Scripts\activate        # Windows
 # source venv/bin/activate   # Linux/Mac
 pip install -r requirements.txt
 python app_simple.py
-# API disponible sur http://localhost:5000
+# API : http://localhost:5000
 
 # Terminal 3 — Frontend
 cd frontend
 npm install
 npm run dev
-# Interface sur http://localhost:5173
-```
-
-### Créer le compte admin initial
-```python
-from pymongo import MongoClient
-import bcrypt
-db = MongoClient()['surveillance_db']
-db.user.insert_one({
-    'email': 'admin@amane-nexus.com',
-    'username': 'admin',
-    'password': bcrypt.hashpw(b'admin123', bcrypt.gensalt()),
-    'role': 'admin',
-    'full_name': 'Administrateur'
-})
+# Interface : http://localhost:3000
 ```
 
 ---
 
 ## Variables d'Environnement
 
-Créer un fichier `.env` dans `backend/` :
+Créer un fichier `.env` à la racine du projet :
 
 ```env
-SECRET_KEY=votre_cle_secrete_forte_32_chars_min
+SECRET_KEY=votre_cle_secrete_forte_32_chars_minimum
 MONGO_URI=mongodb://localhost:27017/
-MONGO_DB=surveillance_db
-FLASK_ENV=development
-FLASK_PORT=5000
+ANALYTICS_CACHE_TTL=3600
 ```
 
 ---
@@ -159,36 +165,48 @@ FLASK_PORT=5000
 ## API REST — Endpoints
 
 ### Authentification
+
 | Méthode | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/api/auth/login` | — | Connexion → JWT |
+| POST | `/api/auth/login` | — | Connexion → JWT token |
 | POST | `/api/auth/logout` | JWT | Déconnexion (journalisée) |
 | GET | `/api/auth/me` | JWT | Profil utilisateur courant |
 
 ### Caméras
+
 | Méthode | Endpoint | Auth | Description |
 |---|---|---|---|
 | GET | `/api/cameras` | JWT | Liste des caméras |
 | POST | `/api/cameras` | JWT | Ajouter une caméra |
 | DELETE | `/api/cameras/<id>` | JWT | Supprimer une caméra |
+| POST | `/api/cameras/<id>/live/start` | JWT | Démarrer flux live |
+| POST | `/api/cameras/<id>/live/stop` | JWT | Arrêter flux live |
+| GET | `/api/cameras/<id>/live/status` | JWT | Statut du flux live |
 
 ### Vidéos & Analyses
+
 | Méthode | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/api/videos` | JWT | Liste des vidéos |
+| GET | `/api/videos` | JWT | Liste des vidéos uploadées |
 | POST | `/api/videos/upload` | JWT | Upload vidéo (mp4/avi/mov) |
 | DELETE | `/api/videos/<id>` | JWT | Supprimer une vidéo |
-| POST | `/api/analyses/create` | JWT | Lancer une analyse |
+| POST | `/api/analyses/create` | JWT | Lancer une analyse YOLOv8 |
 | GET | `/api/analyses/<id>` | JWT | Statut + résultats |
-| GET | `/api/analyses/<id>/alerts` | JWT | Alertes avec captures |
-| GET | `/api/analyses/statistics` | JWT | Stats globales (filtre `?days=N`) |
-| GET | `/api/analyses/benchmarks` | JWT | Benchmarks YOLOv8n |
+| GET | `/api/analyses/<id>/alerts` | JWT | Alertes avec captures JPEG |
+| GET | `/api/analyses/<id>/trends` | JWT | Tendances temporelles |
+| GET | `/api/analyses/<id>/metrics-export` | JWT | Export CSV métriques |
+| GET | `/api/analyses/statistics` | JWT | Stats globales (`?days=N`) |
+| GET | `/api/analyses/benchmarks` | JWT | Métriques YOLOv8n validées |
+| GET | `/api/alerts/export` | JWT | Export alertes CSV |
 
 ### Administration
+
 | Méthode | Endpoint | Auth | Description |
 |---|---|---|---|
 | GET | `/api/users` | Admin | Liste des utilisateurs |
 | POST | `/api/users` | Admin | Créer un utilisateur |
+| PUT | `/api/users/<id>` | Admin | Modifier un utilisateur |
+| DELETE | `/api/users/<id>` | Admin | Supprimer un utilisateur |
 | GET | `/api/captures/<file>` | JWT | Servir capture annotée |
 | GET | `/api/activity-logs` | JWT | Journal d'activité |
 | GET | `/api/health` | — | Statut système |
@@ -199,32 +217,31 @@ FLASK_PORT=5000
 
 ```bash
 cd backend
-python -m pytest tests/ -v --cov=app_simple
+python -m pytest tests/ -v --cov=.
 ```
 
-**Résultats : 57/57 tests passés**
+**Résultats : 58/58 tests passés ✅**
 
-### Tests Agents (`test_agents.py`) — 30 tests
+### Couverture des tests
+
+| Fichier de test | Tests | Description |
+|---|---|---|
+| `test_agents.py` | 30 | Algorithmes heuristiques (chute, attroupement, objet) |
+| `test_api.py` | 12 | Intégration REST API (auth, caméras, stats) |
+| `test_analytics.py` | 5 | Service analytics et tendances |
+| `test_benchmarks.py` | 10 | Validation structure et valeurs benchmark_results.json |
+| `test_falls.py` | 1 | Validation URFD recall = 100% |
+
+### Résultats agents (données synthétiques)
 
 | Agent | Précision | Rappel | F1 | Accuracy |
 |---|---|---|---|---|
 | Chute | 1.000 | 0.667 | 0.800 | 0.833 |
 | Attroupement | 1.000 | 0.667 | 0.800 | 0.833 |
 | Objet abandonné | 1.000 | 0.667 | 0.800 | 0.833 |
-| **Global** | **1.000** | **0.667** | **0.800** | **0.833** |
 
 > Précision = 1.0 → aucune fausse alarme sur données synthétiques.  
-> Rappel = 0.667 → les FN sont intentionnels (cooldown anti-doublon).
-
-### Tests API (`test_api.py`) — 27 tests
-
-| Groupe | Tests | Statut |
-|---|---|---|
-| Authentification | 9 | ✅ |
-| Caméras | 5 | ✅ |
-| Statistiques | 4 | ✅ |
-| Accès Admin | 5 | ✅ |
-| Vidéos & Logs | 4 | ✅ |
+> Rappel = 0.667 → les FN sont intentionnels (cooldown anti-doublon actif).
 
 ---
 
@@ -233,57 +250,66 @@ python -m pytest tests/ -v --cov=app_simple
 ```
 AMANE-NEXUS/
 ├── backend/
-│   ├── app_simple.py          # API Flask (18 endpoints REST)
-│   ├── worker_analysis.py     # Worker YOLOv8n + DeepSORT + heuristiques
-│   ├── .env                   # Variables d'environnement (ne pas committer)
+│   ├── app_simple.py              # API Flask — 18 endpoints REST
+│   ├── worker_analysis.py         # Worker YOLOv8n + DeepSORT + heuristiques
 │   ├── requirements.txt
-│   ├── config/
 │   ├── data/
-│   │   └── benchmark_results.json
+│   │   └── benchmark_results.json # Métriques validées END-TO-END
 │   ├── services/
-│   ├── routes/
-│   ├── captures/              # Images JPEG annotées générées
-│   ├── uploads/               # Vidéos uploadées
+│   │   └── analytics_service.py   # BenchmarkLoader + analytics
+│   ├── routes/                    # Blueprints Flask
+│   ├── captures/                  # Images JPEG annotées (générées)
+│   ├── uploads/                   # Vidéos uploadées
 │   └── tests/
-│       ├── test_agents.py     # 30 tests algorithmes heuristiques
-│       └── test_api.py        # 27 tests intégration REST API
+│       ├── test_agents.py         # 30 tests algorithmes
+│       ├── test_api.py            # 12 tests API REST
+│       ├── test_analytics.py      # 5 tests analytics
+│       ├── test_benchmarks.py     # 10 tests benchmarks
+│       └── test_falls.py          # 1 test URFD
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx
-│   │   ├── services/
-│   │   │   └── api.js         # URL centralisée + captureUrl()
-│   │   ├── context/
-│   │   │   └── authStore.js   # Zustand store (JWT)
-│   │   ├── pages/             # Dashboard, Vidéos, Stats, Benchmarks...
+│   │   ├── services/api.js        # Client API centralisé
+│   │   ├── context/authStore.js   # Zustand store JWT
+│   │   ├── pages/                 # Dashboard, Vidéos, Stats, Benchmarks
 │   │   └── components/
 │   ├── package.json
 │   └── vite.config.js
 ├── .github/
-│   └── workflows/ci.yml       # Pipeline CI/CD
-├── Dockerfile
-├── docker-compose.yml
+│   └── workflows/ci.yml           # Pipeline CI/CD 5 jobs
+├── Dockerfile                     # Multi-stage build
+├── docker-compose.yml             # 4 services + healthchecks
+├── .dockerignore
 └── nginx.conf
 ```
 
 ---
 
-## Performances
+## Pipeline CI/CD
 
-| Métrique | Valeur |
-|---|---|
-| F1-Score global (benchmark réel) | **85.7%** |
-| Précision | **94.5%** |
-| Rappel | **83.3%** |
-| Inférence YOLOv8n CPU | **191 ms/frame** |
-| FPS effectif (FRAME_SKIP=3) | **15.6 FPS** |
-| Taille modèle YOLOv8n | **6.2 Mo** |
-| Couverture de tests | **41% app_simple.py** |
+Le pipeline GitHub Actions exécute **5 jobs en séquence** à chaque push sur `main` :
+
+```
+lint-backend → test-backend → validate-benchmarks → test-frontend → docker-build
+                                                                          │
+                                                                    pipeline-report
+```
+
+| Job | Description | Outil |
+|---|---|---|
+| `lint-backend` | Vérification style Python | flake8 --max-line-length=120 |
+| `test-backend` | Tests unitaires + intégration | pytest + MongoDB service |
+| `validate-benchmarks` | F1 ≥ 0.50, Précision ≥ 40% | Python assertions |
+| `test-frontend` | Build production React | Vite build |
+| `docker-build` | Build image multi-stage | docker/build-push-action |
 
 ---
 
 ## Auteur
 
-**Mohamed Z'GHARI** 
+**Mohamed Z'GHARI**  
+PFE MSID-TAM — Master Systèmes Informatiques et Décisionnels  
+Université Mohammed V — Rabat, 2026
 
 ---
 
