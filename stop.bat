@@ -1,22 +1,42 @@
 @echo off
-title AMANE-NEXUS — Arrêt
+title AMANE-NEXUS Arret
 color 0C
 
 echo.
 echo  ============================================================
-echo   AMANE-NEXUS — Arrêt des serveurs
+echo   AMANE-NEXUS - Arret des services
 echo  ============================================================
 echo.
 
-echo  Arrêt du backend Flask...
-taskkill /FI "WINDOWTITLE eq AMANE Backend*" /F >nul 2>&1
-taskkill /IM python.exe /F >nul 2>&1
-echo  OK
+:: Verifier si Docker est disponible
+docker info >nul 2>&1
+if errorlevel 1 (
+    echo  [INFO] Docker non disponible - arret mode local...
+    taskkill /IM python.exe /F >nul 2>&1
+    taskkill /IM node.exe /F >nul 2>&1
+    taskkill /IM mongod.exe /F >nul 2>&1
+    echo  OK - Processus locaux arretes.
+    goto :fin
+)
 
-echo  Arrêt du frontend Vite...
-taskkill /FI "WINDOWTITLE eq AMANE Frontend*" /F >nul 2>&1
-echo  OK
+:: Arret Docker Compose
+echo  [DOCKER] Arret des containers...
+cd /d D:\surveillance_project
+docker-compose down
+
+if errorlevel 1 (
+    echo  [ERREUR] Probleme lors de l'arret. Essai force...
+    docker stop amane_nexus_backend amane_nexus_frontend amane_nexus_mongodb amane_nexus_redis >nul 2>&1
+)
 
 echo.
-echo  Tous les serveurs sont arrêtés.
+echo  Statut final :
+docker ps --format "  {{.Names}} -> {{.Status}}"
+
+:fin
+echo.
+echo  ============================================================
+echo   Tous les services AMANE-NEXUS sont arretes.
+echo  ============================================================
+echo.
 timeout /t 2 /nobreak >nul
