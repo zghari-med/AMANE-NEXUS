@@ -15,10 +15,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ libgl1 libglib2.0-0 libsm6 libxrender1 libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copier et installer les dépendances Python
+# Copier et installer les dépendances Python (CPU only - pas de CUDA)
 COPY backend/requirements.txt .
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt --target /build/python-packages
+    pip install --no-cache-dir \
+        torch==2.1.0+cpu torchvision==0.16.0+cpu \
+        --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt \
+        --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Copier le code backend
 COPY backend/ .
@@ -56,7 +60,8 @@ RUN useradd -m -u 1000 surveillance
 WORKDIR /app/backend
 
 # Copier les packages Python installés
-COPY --from=backend-builder /build/python-packages /usr/local/lib/python3.10/site-packages/
+COPY --from=backend-builder /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
+COPY --from=backend-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=backend-builder /build/backend /app/backend/
 
 # Dossiers runtime
