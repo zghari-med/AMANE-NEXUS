@@ -6,71 +6,67 @@ color 0A
 echo.
 echo  ============================================================
 echo   AMANE-NEXUS - Systeme de Surveillance Intelligente
-echo   PFE Master MSID-TAM 2026
+echo   Mohamed Z'GHARI - 2026
 echo  ============================================================
 echo.
 
-:: Create MongoDB directory
-if not exist "D:\surveillance_project\backend\data\db" (
-    mkdir "D:\surveillance_project\backend\data\db"
-    echo  [SETUP] MongoDB directory created
-)
-
-:: Install Python dependencies
-echo  [1/5] Installing Python dependencies...
-D:\surveillance_project\venv\Scripts\pip.exe install -q -r D:\surveillance_project\backend\requirements.txt >nul 2>&1
+:: Verifier si Docker Desktop est disponible
+docker info >nul 2>&1
 if errorlevel 1 (
-    echo       WARNING: Could not install Python dependencies
-) else (
-    echo       OK
+    echo  [DOCKER] Docker Desktop non disponible.
+    echo  [DOCKER] Lance Docker Desktop et reessaie.
+    echo  [DOCKER] Ou utilise start_local.bat pour le mode local.
+    echo.
+    pause
+    exit /b 1
 )
 
-:: Install Node dependencies
-echo  [2/5] Installing Node.js dependencies...
-if not exist "D:\surveillance_project\frontend\node_modules" (
-    cd /d D:\surveillance_project\frontend
-    call npm install --silent >nul 2>&1
-    if errorlevel 1 (
-        echo       WARNING: npm install failed
-    ) else (
-        echo       OK
-    )
-) else (
-    echo       OK (already installed)
+echo  [DOCKER] Docker Desktop detecte.
+echo.
+
+:: Lancer avec Docker Compose
+echo  [1/2] Demarrage des services Docker...
+cd /d D:\surveillance_project
+docker-compose up -d
+
+if errorlevel 1 (
+    echo.
+    echo  [ERREUR] docker-compose up a echoue.
+    echo  Verifie les logs : docker-compose logs
+    pause
+    exit /b 1
 )
 
-:: Start MongoDB
-echo  [3/5] Starting MongoDB...
-start "MongoDB" /min cmd /k "mongod --dbpath D:\surveillance_project\backend\data\db --quiet"
-timeout /t 3 /nobreak >nul
-echo       OK
+echo.
+echo  [2/2] Verification des services...
+timeout /t 10 /nobreak >nul
 
-:: Start Flask Backend
-echo  [4/5] Starting Flask Backend...
-start "AMANE-Backend" /min cmd /k "cd /d D:\surveillance_project\backend && D:\surveillance_project\venv\Scripts\python.exe app_simple.py"
-timeout /t 4 /nobreak >nul
-echo       OK
-
-:: Start React Frontend
-echo  [5/5] Starting React Frontend...
-start "AMANE-Frontend" /min cmd /k "cd /d D:\surveillance_project\frontend && npm run dev"
-timeout /t 5 /nobreak >nul
-echo       OK
+:: Verifier backend
+curl -s -o nul -w "%%{http_code}" http://localhost:5000/api/health 2>nul | findstr "200" >nul
+if errorlevel 1 (
+    echo  [ATTENTE] Backend demarre... patience 15s
+    timeout /t 15 /nobreak >nul
+)
 
 echo.
 echo  ============================================================
-echo   Application running!
+echo   Application AMANE-NEXUS en cours d'execution !
 echo.
 echo   Frontend    : http://localhost:3000
 echo   API         : http://localhost:5000/api/health
 echo   MongoDB     : localhost:27017
+echo   Redis       : localhost:6379
 echo.
-echo   Default Login:
+echo   Login par defaut :
 echo   Email       : admin@surveillance.com
-echo   Password    : admin123
+echo   Mot de passe: admin123
+echo.
+echo   Pour arreter : stop.bat  ou  docker-compose down
 echo  ============================================================
 echo.
 
+:: Ouvrir navigateur
 start "" "http://localhost:3000"
 
-pause
+echo  Appuie sur une touche pour fermer cette fenetre...
+pause >nul
