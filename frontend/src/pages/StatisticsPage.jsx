@@ -11,6 +11,7 @@ import {
   BarChart3, AlertCircle, Video, TrendingUp,
   Download, FileText, Sheet, FileSpreadsheet,
   Camera, Clock, ChevronLeft, ChevronRight, Search,
+  PersonStanding, Users, Package,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -20,6 +21,12 @@ const TYPE_COLORS = { fall: '#ef4444', crowding: '#f59e0b', abandoned: '#3b82f6'
 const PIE_COLORS  = ['#ef4444', '#f59e0b', '#3b82f6']
 
 const EVENT_LABELS = { fall: 'Chute', crowding: 'Attroupement', abandoned: 'Objet abandonné' }
+
+const EVENT_ICONS = {
+  fall:      { Icon: PersonStanding, color: '#ef4444', bg: 'bg-red-50',    text: 'text-red-500'    },
+  crowding:  { Icon: Users,          color: '#f59e0b', bg: 'bg-orange-50', text: 'text-orange-500' },
+  abandoned: { Icon: Package,        color: '#3b82f6', bg: 'bg-blue-50',   text: 'text-blue-500'   },
+}
 
 /* ── Custom bar label ──────────────────────────────────────────────── */
 const BarLabel = ({ x, y, width, value }) =>
@@ -85,7 +92,7 @@ export default function StatisticsPage() {
   const { token } = useAuthStore()
   const [stats,   setStats]   = useState(null)
   const [loading, setLoading] = useState(true)
-  const [days,    setDays]    = useState(7)
+  const [days,    setDays]    = useState(0)
 
   // Export / alerts table state
   const [allAlerts,    setAllAlerts]   = useState([])
@@ -104,7 +111,10 @@ export default function StatisticsPage() {
   const fetchStats = async () => {
     setLoading(true)
     try {
-      const r = await fetch(`${API}/api/analyses/statistics?days=${days}`, { headers })
+      const url = days > 0
+        ? `${API}/api/analyses/statistics?days=${days}`
+        : `${API}/api/analyses/statistics`
+      const r = await fetch(url, { headers })
       setStats(await r.json())
     } catch { toast.error('Erreur chargement statistiques') }
     finally { setLoading(false) }
@@ -172,6 +182,7 @@ export default function StatisticsPage() {
               onChange={e => setDays(Number(e.target.value))}
               className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
+              <option value={0}>Tout (depuis le début)</option>
               <option value={7}>7 derniers jours</option>
               <option value={30}>30 derniers jours</option>
               <option value={90}>90 derniers jours</option>
@@ -261,15 +272,23 @@ export default function StatisticsPage() {
                         </PieChart>
                       </ResponsiveContainer>
                       <div className="space-y-2.5 mt-1">
-                        {pieData.map((d, i) => (
-                          <div key={d.name} className="flex items-center justify-between text-sm">
+                        {[
+                          { key: 'fall',      name: 'Chutes',            value: stats?.alerts_by_type?.fall      || 0 },
+                          { key: 'crowding',  name: 'Attroupements',     value: stats?.alerts_by_type?.crowding  || 0 },
+                          { key: 'abandoned', name: 'Objets abandonnés', value: stats?.alerts_by_type?.abandoned || 0 },
+                        ].map(d => {
+                          const ev = EVENT_ICONS[d.key]
+                          return (
+                          <div key={d.key} className="flex items-center justify-between text-sm">
                             <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full" style={{ background: PIE_COLORS[i] }} />
+                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${ev.bg}`}>
+                                <ev.Icon size={14} className={ev.text} />
+                              </div>
                               <span className="text-gray-600">{d.name}</span>
                             </div>
-                            <span className="font-bold" style={{ color: PIE_COLORS[i] }}>{d.value}</span>
+                            <span className="font-bold" style={{ color: ev.color }}>{d.value}</span>
                           </div>
-                        ))}
+                        )})}
                         <div className="pt-2 border-t flex justify-between text-sm">
                           <span className="text-gray-500">Total</span>
                           <span className="font-bold text-gray-900">
@@ -367,13 +386,24 @@ export default function StatisticsPage() {
                       return (
                         <tr key={al._id} className="hover:bg-gray-50 transition">
                           <td className="px-4 py-3">
-                            <span className="flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full shrink-0"
-                                style={{ background: TYPE_COLORS[al.event_type] || '#94a3b8' }} />
-                              <span className="font-medium text-gray-900">
-                                {EVENT_LABELS[al.event_type] || al.event_type}
-                              </span>
-                            </span>
+                            {(() => {
+                              const ev = EVENT_ICONS[al.event_type]
+                              return (
+                                <span className="flex items-center gap-2">
+                                  {ev ? (
+                                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${ev.bg}`}>
+                                      <ev.Icon size={14} className={ev.text} />
+                                    </div>
+                                  ) : (
+                                    <span className="w-2 h-2 rounded-full shrink-0"
+                                      style={{ background: TYPE_COLORS[al.event_type] || '#94a3b8' }} />
+                                  )}
+                                  <span className="font-medium text-gray-900">
+                                    {EVENT_LABELS[al.event_type] || al.event_type}
+                                  </span>
+                                </span>
+                              )
+                            })()}
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-1.5 text-gray-600">

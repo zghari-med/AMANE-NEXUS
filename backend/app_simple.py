@@ -339,7 +339,7 @@ def get_statistics():
     # Optional date filter: ?days=7|30|90 (default: all time)
     days_param = request.args.get('days')
     date_filter = {}
-    if days_param and days_param.isdigit():
+    if days_param and days_param.isdigit() and int(days_param) > 0:
         cutoff = datetime.utcnow() - timedelta(days=int(days_param))
         date_filter = {'created_at': {'$gte': cutoff}}
     # EVERYONE sees the SAME data — no user filtering

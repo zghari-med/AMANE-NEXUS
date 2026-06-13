@@ -2,9 +2,15 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import { useAuthStore } from '../context/authStore'
-import { AlertCircle, Download, BarChart3, Play } from 'lucide-react'
+import { AlertCircle, Download, BarChart3, Play, PersonStanding, Users, Package, TrendingDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+
+const EVENT_META = {
+  fall:      { Icon: PersonStanding, bg: 'bg-red-100',    color: 'text-red-500',    label: 'Chute',            badgeClass: 'bg-red-100 text-red-700'    },
+  crowding:  { Icon: Users,          bg: 'bg-orange-100', color: 'text-orange-500', label: 'Attroupement',     badgeClass: 'bg-orange-100 text-orange-700' },
+  abandoned: { Icon: Package,        bg: 'bg-blue-100',   color: 'text-blue-500',   label: 'Objet abandonné',  badgeClass: 'bg-blue-100 text-blue-700'   },
+}
 
 export default function AnalysisPage() {
   const { analysisId } = useParams()
@@ -116,21 +122,45 @@ export default function AnalysisPage() {
             <div className="card p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Résumé de l'Analyse</h3>
               <div className="space-y-3">
-                <div>
-                  <p className="text-gray-600 text-sm">Total Événements</p>
-                  <p className="text-3xl font-bold text-gray-900">{analysis.total_events}</p>
+                {/* Total */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-gray-200 flex items-center justify-center">
+                      <BarChart3 size={18} className="text-gray-600" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">Total événements</span>
+                  </div>
+                  <span className="text-xl font-bold text-gray-900">{analysis.total_events ?? 0}</span>
                 </div>
-                <div>
-                  <p className="text-gray-600 text-sm">Chutes Détectées</p>
-                  <p className="text-2xl font-bold text-red-600">{analysis.falls_detected}</p>
+                {/* Chutes */}
+                <div className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center">
+                      <PersonStanding size={18} className="text-red-500" />
+                    </div>
+                    <span className="text-sm font-medium text-red-700">Chutes détectées</span>
+                  </div>
+                  <span className="text-xl font-bold text-red-600">{analysis.falls_detected ?? 0}</span>
                 </div>
-                <div>
-                  <p className="text-gray-600 text-sm">Attroupements</p>
-                  <p className="text-2xl font-bold text-orange-600">{analysis.crowds_detected}</p>
+                {/* Attroupements */}
+                <div className="flex items-center justify-between p-3 bg-orange-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center">
+                      <Users size={18} className="text-orange-500" />
+                    </div>
+                    <span className="text-sm font-medium text-orange-700">Attroupements</span>
+                  </div>
+                  <span className="text-xl font-bold text-orange-600">{analysis.crowds_detected ?? 0}</span>
                 </div>
-                <div>
-                  <p className="text-gray-600 text-sm">Objets Abandonnés</p>
-                  <p className="text-2xl font-bold text-blue-600">{analysis.abandoned_objects}</p>
+                {/* Objets abandonnés */}
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                      <Package size={18} className="text-blue-500" />
+                    </div>
+                    <span className="text-sm font-medium text-blue-700">Objets abandonnés</span>
+                  </div>
+                  <span className="text-xl font-bold text-blue-600">{analysis.abandoned_objects ?? 0}</span>
                 </div>
               </div>
             </div>
@@ -205,18 +235,29 @@ export default function AnalysisPage() {
                     transition={{ delay: idx * 0.05 }}
                     className="p-4 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900 capitalize">{alert.event_type}</p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Frame: {alert.frame_id} • {alert.timestamp}s
+                    <div className="flex items-center gap-3">
+                      {/* Icône comportement */}
+                      {(() => {
+                        const meta = EVENT_META[alert.event_type]
+                        if (!meta) return <AlertCircle size={20} className="text-gray-400 flex-shrink-0" />
+                        return (
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.bg}`}>
+                            <meta.Icon size={18} className={meta.color} />
+                          </div>
+                        )
+                      })()}
+                      {/* Infos */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 text-sm">
+                          {EVENT_META[alert.event_type]?.label ?? alert.event_type}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Frame {alert.frame_id} · {Number(alert.timestamp).toFixed(1)}s
                         </p>
                       </div>
-                      <span className={`badge ${
-                        alert.risk_level === 'critical' ? 'bg-red-100 text-red-800' :
-                        alert.risk_level === 'high' ? 'bg-orange-100 text-orange-800' :
-                        alert.risk_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-blue-100 text-blue-800'
+                      {/* Badge risque */}
+                      <span className={`badge flex-shrink-0 ${
+                        EVENT_META[alert.event_type]?.badgeClass ?? 'bg-gray-100 text-gray-700'
                       }`}>
                         {alert.risk_level}
                       </span>
