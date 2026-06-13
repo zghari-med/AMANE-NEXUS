@@ -57,6 +57,8 @@ test-backend:
   variables:
     MONGO_URI: "mongodb://mongodb:27017/"
     MONGO_DB: surveillance_test
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq libgl1 libglib2.0-0
   script:
     - pip install --upgrade pip --quiet
     - pip install -r backend/requirements.txt pytest pytest-cov --quiet
