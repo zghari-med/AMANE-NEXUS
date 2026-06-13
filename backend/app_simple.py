@@ -1123,7 +1123,7 @@ def seed_admin():
             admin_pw = secrets.token_urlsafe(16)
             log.warning("=" * 60)
             log.warning("ADMIN PASSWORD GÉNÉRÉ AUTOMATIQUEMENT (non défini dans .env)")
-            log.warning(f"  Email    : admin@surveillance.com")
+            log.warning("  Email    : admin@surveillance.com")
             log.warning(f"  Password : {admin_pw}")
             log.warning("Changez ce mot de passe dès la première connexion !")
             log.warning("=" * 60)
