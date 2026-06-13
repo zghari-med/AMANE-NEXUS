@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Menu, X, LayoutDashboard, Video, BarChart3,
-  LogOut, Users, UserCircle,
+  LogOut, Users, UserCircle, Shield,
 } from 'lucide-react'
 import { useAuthStore } from '../context/authStore'
 
@@ -15,89 +15,102 @@ export default function Sidebar() {
     href === '/' ? location.pathname === '/' : location.pathname.startsWith(href)
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard',    href: '/',           color: 'text-blue-400'   },
-    { icon: Video,           label: 'Vidéos',       href: '/videos',     color: 'text-purple-400' },
-    { icon: BarChart3,       label: 'Statistiques', href: '/statistics', color: 'text-green-400'  },
-    { icon: UserCircle,      label: 'Mon Profil',   href: '/profile',    color: 'text-pink-400'   },
+    { icon: LayoutDashboard, label: 'Dashboard',    href: '/'           },
+    { icon: Video,           label: 'Vidéos',       href: '/videos'     },
+    { icon: BarChart3,       label: 'Statistiques', href: '/statistics' },
+    { icon: UserCircle,      label: 'Mon Profil',   href: '/profile'    },
   ]
 
-  const NavLink = ({ item }) => (
-    <Link
-      to={item.href}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-        ${isActive(item.href) ? 'bg-slate-700 shadow-sm' : 'hover:bg-slate-700/60'}`}
-    >
-      <item.icon size={18} className={item.color} />
-      <span className="text-sm font-medium">{item.label}</span>
-      {isActive(item.href) && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />}
-    </Link>
-  )
+  const NavLink = ({ item }) => {
+    const active = isActive(item.href)
+    return (
+      <Link
+        to={item.href}
+        className={`nav-link ${active ? 'nav-link-active' : ''}`}
+      >
+        <item.icon
+          size={18}
+          className={active ? 'text-brand-600' : 'text-secondaryGray-600'}
+        />
+        <span>{item.label}</span>
+        {active && (
+          <div className="ml-auto w-1.5 h-5 rounded-full bg-brand-600" />
+        )}
+      </Link>
+    )
+  }
 
   return (
     <>
-      {/* Mobile Toggle */}
+      {/* Mobile toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-40 p-2 bg-white rounded-lg shadow-md lg:hidden"
+        className="fixed top-4 left-4 z-40 p-2 bg-white rounded-xl shadow-horizon lg:hidden"
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
+        {isOpen ? <X size={20} className="text-navy-700" /> : <Menu size={20} className="text-navy-700" />}
       </button>
 
       {/* Sidebar */}
       <div className={`
-        fixed left-0 top-0 h-screen w-60 bg-gradient-to-b from-slate-900 to-slate-800
-        text-white shadow-2xl transition-transform duration-300 flex flex-col
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static z-30
+        fixed left-0 top-0 h-screen w-64 bg-white shadow-horizon
+        flex flex-col z-30 transition-transform duration-300
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static
       `}>
+
         {/* Logo */}
-        <div className="p-5 border-b border-slate-700 shrink-0">
+        <div className="px-6 pt-8 pb-6">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center">
-              <Video size={20} className="text-white" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center shadow-sm">
+              <Shield size={20} className="text-white" />
             </div>
-            <h1 className="text-lg font-bold leading-tight">AMANE-NEXUS</h1>
+            <div>
+              <h1 className="text-base font-bold text-navy-700 leading-tight">AMANE</h1>
+              <p className="text-[10px] text-secondaryGray-600 font-medium tracking-wide">NEXUS PLATFORM</p>
+            </div>
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        {/* Section label */}
+        <div className="px-6 mb-2">
+          <p className="text-[10px] uppercase font-semibold tracking-widest text-secondaryGray-600">
+            Navigation
+          </p>
+        </div>
 
-          {/* Common links — everyone */}
+        {/* Nav links */}
+        <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
           {menuItems.map(item => <NavLink key={item.href} item={item} />)}
 
-          {/* Admin-only section */}
           {user?.role === 'admin' && (
             <>
-              <div className="px-3 pt-4 pb-1">
-                <p className="text-[10px] text-slate-500 uppercase font-semibold tracking-wider">
+              <div className="px-4 pt-5 pb-2">
+                <p className="text-[10px] uppercase font-semibold tracking-widest text-secondaryGray-600">
                   Administration
                 </p>
               </div>
-              <NavLink item={{ icon: Users, label: 'Utilisateurs', href: '/users', color: 'text-orange-400' }} />
+              <NavLink item={{ icon: Users, label: 'Utilisateurs', href: '/users' }} />
             </>
           )}
         </nav>
 
-        {/* User info + logout */}
-        <div className="p-3 border-t border-slate-700 shrink-0 space-y-2">
-          <div className="px-3 py-2.5 rounded-lg bg-slate-700/40">
-            <div className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                user?.role === 'admin' ? 'bg-orange-500' : 'bg-blue-500'
-              }`}>
-                {user?.username?.[0]?.toUpperCase() || '?'}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{user?.username}</p>
-                <p className="text-xs text-slate-400 uppercase">{user?.role}</p>
-              </div>
+        {/* User card + logout */}
+        <div className="p-4 mx-3 mb-4 rounded-2xl bg-secondaryGray-300">
+          <div className="flex items-center gap-3 mb-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0 ${
+              user?.role === 'admin' ? 'bg-gradient-brand' : 'bg-navy-600'
+            }`}>
+              {user?.username?.[0]?.toUpperCase() || '?'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-navy-700 truncate">{user?.username}</p>
+              <p className="text-[11px] text-secondaryGray-600 font-medium capitalize">{user?.role}</p>
             </div>
           </div>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-sm"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-secondaryGray-600 hover:text-red-500 hover:bg-red-50 transition-all text-xs font-medium"
           >
-            <LogOut size={16} />
+            <LogOut size={14} />
             <span>Déconnexion</span>
           </button>
         </div>
@@ -105,7 +118,7 @@ export default function Sidebar() {
 
       {/* Mobile overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-20 lg:hidden" onClick={() => setIsOpen(false)} />
+        <div className="fixed inset-0 bg-navy-900/30 backdrop-blur-sm z-20 lg:hidden" onClick={() => setIsOpen(false)} />
       )}
     </>
   )
