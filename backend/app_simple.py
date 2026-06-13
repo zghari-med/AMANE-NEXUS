@@ -4,6 +4,7 @@
 import os
 import logging
 import jwt
+import secrets
 import threading
 import time
 import subprocess
@@ -12,6 +13,8 @@ from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import bcrypt
@@ -45,11 +48,31 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'pfe_surveillance_2026_change_in_production')
+
+# ── SECRET KEY : obligatoire via env, jamais de fallback hardcodé ─────────────
+_secret = os.environ.get('SECRET_KEY', '')
+if not _secret or _secret.startswith('pfe_'):
+    _secret = secrets.token_hex(32)
+    log.warning("SECRET_KEY non définie ou faible — clé aléatoire générée pour cette session. "
+                "Définissez SECRET_KEY dans votre .env pour la persistance des tokens.")
+app.config['SECRET_KEY'] = _secret
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB
-CORS(app)
+
+# ── CORS : origines explicites uniquement ─────────────────────────────────────
+_cors_raw = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://localhost:5173')
+_cors_origins = [o.strip() for o in _cors_raw.split(',') if o.strip()]
+CORS(app, origins=_cors_origins, supports_credentials=True)
+
+# ── Rate limiter ──────────────────────────────────────────────────────────────
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri='memory://',
+)
 
 # MongoDB
 MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
@@ -65,16 +88,20 @@ ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'webm'}
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Accept token from Authorization header OR query string (for <video> src)
-        token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        if not token:
-            token = request.args.get('token', '')
+        # Token depuis Authorization header uniquement
+        # Exception : endpoint de streaming vidéo accepte aussi ?token= car
+        # les balises <video> ne peuvent pas envoyer de header personnalisé.
+        token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+        if not token and request.endpoint in ('stream_video',):
+            token = request.args.get('token', '').strip()
         if not token:
             return jsonify({'error': 'Missing token'}), 401
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
             request.user_id = data['user_id']
             request.user_role = data['role']
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token expiré'}), 401
         except Exception:
             return jsonify({'error': 'Invalid token'}), 401
         return f(*args, **kwargs)
@@ -108,6 +135,7 @@ def api_info():
     return jsonify({'name': 'Surveillance Platform API', 'version': '1.0.0'}), 200
 
 @app.route('/api/auth/login', methods=['POST'])
+@limiter.limit("10 per minute; 50 per hour")
 def login():
     data = request.json
     email = data.get('email')
@@ -1077,15 +1105,31 @@ def get_live_status(cam_id):
 def not_found(error):
     return jsonify({'error': 'Not found'}), 404
 
+@app.errorhandler(429)
+def rate_limit_error(error):
+    return jsonify({'error': 'Trop de tentatives. Réessayez dans quelques minutes.'}), 429
+
 @app.errorhandler(500)
 def server_error(error):
     log.error(f"Server error: {error}")
     return jsonify({'error': 'Internal server error'}), 500
 
 def seed_admin():
-    """Créer admin par défaut si aucun admin n'existe."""
+    """Créer admin par défaut si aucun admin n'existe en base."""
     if db.user.count_documents({'role': 'admin'}) == 0:
-        hashed = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt(10))
+        # Mot de passe depuis env var ou généré aléatoirement (jamais hardcodé)
+        admin_pw = os.environ.get('ADMIN_PASSWORD', '').strip()
+        if not admin_pw:
+            admin_pw = secrets.token_urlsafe(16)
+            log.warning("=" * 60)
+            log.warning("ADMIN PASSWORD GÉNÉRÉ AUTOMATIQUEMENT (non défini dans .env)")
+            log.warning(f"  Email    : admin@surveillance.com")
+            log.warning(f"  Password : {admin_pw}")
+            log.warning("Changez ce mot de passe dès la première connexion !")
+            log.warning("=" * 60)
+        else:
+            log.info("Admin créé avec le mot de passe défini dans ADMIN_PASSWORD")
+        hashed = bcrypt.hashpw(admin_pw.encode(), bcrypt.gensalt(12))
         db.user.insert_one({
             'username': 'admin',
             'email': 'admin@surveillance.com',
@@ -1095,7 +1139,6 @@ def seed_admin():
             'created_at': datetime.utcnow(),
             'updated_at': datetime.utcnow(),
         })
-        log.info("ADMIN CREATED: admin@surveillance.com / admin123")
 
 def seed_demo_camera():
     """Insérer une caméra de rue de démonstration si aucune n'existe."""
