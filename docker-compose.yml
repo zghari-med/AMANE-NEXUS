@@ -62,6 +62,7 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ALLOW_PRIVATE_IPS: ${ALLOW_PRIVATE_IPS:-true}
       ANALYTICS_CACHE_TTL: ${ANALYTICS_CACHE_TTL:-3600}
       BENCHMARK_FILE_PATH: /build/backend/data/benchmark_results.json
       PYTHONUNBUFFERED: "1"
