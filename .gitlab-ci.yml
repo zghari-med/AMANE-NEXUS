@@ -181,8 +181,41 @@ deploy:
   allow_failure: true
 
 # ===============================================================================
-# STAGE 5 - RAPPORT FINAL
+# STAGE 5 - RAPPORTS FINAUX
 # ===============================================================================
+
+owasp-report:
+  extends: .python-base
+  stage: report
+  when: always
+  needs:
+    - job: audit-python
+      artifacts: true
+    - job: audit-frontend
+      artifacts: true
+  script:
+    - pip install pip-audit --quiet
+    - python scripts/generate_owasp_report.py pip-audit-report.json
+  artifacts:
+    name: "owasp-report-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - owasp-report.html
+    when: always
+    expire_in: 30 days
+
+benchmark-report:
+  extends: .python-base
+  stage: report
+  when: always
+  needs: []
+  script:
+    - python scripts/generate_benchmark_report.py backend/data/benchmark_results.json
+  artifacts:
+    name: "benchmark-report-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - benchmark-report.html
+    when: always
+    expire_in: 30 days
 
 pipeline-report:
   stage: report
