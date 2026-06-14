@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rapport OWASP Top 10 — AMANE-NEXUS</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Segoe UI',Arial,sans-serif; background:#f8fafc; color:#1e293b; }
+  header { background:linear-gradient(135deg,#1e293b 0%,#334155 100%); color:#fff; padding:36px 48px; }
+  header h1 { font-size:1.9rem; font-weight:700; }
+  header p  { margin-top:6px; color:#94a3b8; font-size:.95rem; }
+  .container { max-width:1100px; margin:32px auto; padding:0 24px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+  .kpi { background:#fff; border-radius:12px; padding:20px 24px; box-shadow:0 1px 4px rgba(0,0,0,.08); text-align:center; }
+  .kpi .val { font-size:2rem; font-weight:800; }
+  .kpi .lbl { font-size:.8rem; color:#64748b; margin-top:4px; text-transform:uppercase; letter-spacing:.05em; }
+  .card { background:#fff; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,.08); margin-bottom:28px; overflow:hidden; }
+  .card-header { background:#f1f5f9; padding:14px 24px; font-weight:700; font-size:1rem; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:10px; }
+  table { width:100%; border-collapse:collapse; font-size:.88rem; }
+  th { background:#f8fafc; padding:11px 14px; text-align:left; font-weight:600; color:#475569; border-bottom:2px solid #e2e8f0; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; }
+  td { padding:12px 14px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:#f8fafc; }
+  .badge-id { background:#1e293b; color:#fff; border-radius:6px; padding:3px 8px; font-size:.78rem; font-weight:700; font-family:monospace; }
+  .badge { border-radius:20px; padding:3px 10px; font-size:.78rem; font-weight:700; white-space:nowrap; }
+  .evidence { color:#64748b; font-size:.82rem; font-family:monospace; }
+  code { background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:.85rem; }
+  .score-bar { height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden; margin:8px 0; }
+  .score-fill { height:100%; background:linear-gradient(90deg,#16a34a,#22c55e); border-radius:6px; width:100%; }
+  footer { text-align:center; color:#94a3b8; font-size:.8rem; padding:32px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛡 Rapport de Sécurité OWASP Top 10</h1>
+  <p>AMANE-NEXUS — Système de Surveillance Intelligente Multi-Agent &nbsp;|&nbsp; Généré le 2026-06-14 23:08 UTC</p>
+</header>
+
+<div class="container">
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="val" style="color:#16a34a">10</div>
+      <div class="lbl">Catégories couvertes</div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="color:#d97706">0</div>
+      <div class="lbl">Partielles</div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="color:#1e293b">100%</div>
+      <div class="lbl">Score de couverture</div>
+      <div class="score-bar"><div class="score-fill"></div></div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="color:#16a34a">0</div>
+      <div class="lbl">CVE sans correctif</div>
+    </div>
+  </div>
+
+  <!-- OWASP Top 10 -->
+  <div class="card">
+    <div class="card-header">📋 Couverture OWASP Top 10 — AMANE-NEXUS</div>
+    <table>
+      <thead><tr><th>ID</th><th>Catégorie</th><th>Statut</th><th>Implémentation</th><th>Évidence</th></tr></thead>
+      <tbody>
+    <tr>
+      <td><span class="badge-id">A01</span></td>
+      <td><strong>Broken Access Control</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>JWT stateless + RBAC (admin / operator / viewer) sur tous les endpoints API</td>
+      <td class="evidence">Décorateur @token_required, rôles vérifiés sur /api/users et /api/cameras</td>
+    </tr>
+    <tr>
+      <td><span class="badge-id">A02</span></td>
+      <td><strong>Cryptographic Failures</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>Mots de passe hachés bcrypt (cost=12) · JWT HS256 · SECRET_KEY auto-généré si faible</td>
+      <td class="evidence">bcrypt.hashpw() dans auth_routes · PyJWT 2.13.0 · génération aléatoire secrets.token_hex()</td>
+    </tr>
+    <tr>
+      <td><span class="badge-id">A03</span></td>
+      <td><strong>Injection</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>Requêtes MongoDB via ObjectId typé (pas de requêtes brutes) · pas d'eval/exec utilisateur</td>
+      <td class="evidence">Toutes les queries utilisent ObjectId(video_id) — injection NoSQL impossible</td>
+    </tr>
+    <tr>
+      <td><span class="badge-id">A04</span></td>
+      <td><strong>Insecure Design</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>Architecture multi-agent isolée · uploads restreints aux types vidéo · séparation frontend/backend</td>
+      <td class="evidence">CORS limité aux origines déclarées · workers d'analyse dans threads séparés</td>
+    </tr>
+    <tr>
+      <td><span class="badge-id">A05</span></td>
+      <td><strong>Security Misconfiguration</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>.env exclu du dépôt · ADMIN_PASSWORD aléatoire au premier boot · CORS_ORIGINS configurables</td>
+      <td class="evidence">.gitignore exclut .env · SECRET_KEY auto-généré · variables d'env dans docker-compose</td>
+    </tr>
+    <tr>
+      <td><span class="badge-id">A06</span></td>
+      <td><strong>Vulnerable & Outdated Components</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>pip-audit en CI/CD · 0 CVE détectées · 0 corrigées · 0 restante(s) sans correctif</td>
+      <td class="evidence">Job audit-python (stage lint) · rapport JSON uploadé comme artifact GitLab</td>
+    </tr>
+    <tr>
+      <td><span class="badge-id">A07</span></td>
+      <td><strong>Identification & Authentication Failures</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>Flask-Limiter : 10 req/min + 50 req/hr sur /api/auth/login · tokens expirables</td>
+      <td class="evidence">Limiter(app, storage_uri=redis) · decorator @limiter.limit sur login endpoint</td>
+    </tr>
+    <tr>
+      <td><span class="badge-id">A08</span></td>
+      <td><strong>Software & Data Integrity Failures</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>6 headers de sécurité HTTP via @after_request : CSP, X-Frame-Options, X-Content-Type-Options…</td>
+      <td class="evidence">Content-Security-Policy, Referrer-Policy, Permissions-Policy sur toutes les réponses</td>
+    </tr>
+    <tr>
+      <td><span class="badge-id">A09</span></td>
+      <td><strong>Security Logging & Monitoring Failures</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>log_activity() trace chaque action (upload, login, delete, analyse) avec user_id et timestamp UTC</td>
+      <td class="evidence">Collection activity_log en MongoDB · logs structurés Python logging niveau INFO/WARNING/ERROR</td>
+    </tr>
+    <tr>
+      <td><span class="badge-id">A10</span></td>
+      <td><strong>Server-Side Request Forgery (SSRF)</strong></td>
+      <td><span class="badge" style="background:#dcfce7;color:#15803d">✔ COUVERT</span></td>
+      <td>_is_ssrf_safe() bloque loopback (127.x, ::1) et link-local (169.254.x.x) · ALLOW_PRIVATE_IPS contrôle RFC1918</td>
+      <td class="evidence">Validation appliquée avant tout fetch() serveur sur URL caméra fournie par l'utilisateur</td>
+    </tr></tbody>
+    </table>
+  </div>
+
+  <!-- Dependency Audit -->
+  <div class="card">
+    <div class="card-header">🔍 Audit des dépendances Python (pip-audit · A06)</div>
+    <table>
+      <thead><tr><th>Package</th><th>Version</th><th>CVE / ID</th><th>Correctif</th><th>Statut</th></tr></thead>
+      <tbody><tr><td colspan="5" style="text-align:center;color:#6b7280">Aucune vulnérabilité détectée ✔</td></tr></tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>AMANE-NEXUS</footer>
+</body>
+</html>

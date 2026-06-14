@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════════════
-# Dockerfile multi-stage — PFE MSID-TAM Surveillance Platform
+# Dockerfile multi-stage — Surveillance Platform
 # Stage 1 : backend-builder  (Python dependencies)
 # Stage 2 : frontend-builder (Node.js build)
 # Stage 3 : runtime          (Python 3.10-slim + Nginx)
@@ -45,7 +45,7 @@ RUN npm run build
 # ── Stage 3 : runtime ───────────────────────────────────────────────────────
 FROM python:3.10-slim AS runtime
 
-LABEL maintainer="Amane — PFE MSID-TAM 2026"
+LABEL maintainer="Amane NEXUS "
 LABEL description="Système de Surveillance Intelligente Multi-Agent"
 
 # Installer Nginx + dépendances système

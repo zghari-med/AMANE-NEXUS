@@ -222,7 +222,7 @@ html = f"""<!DOCTYPE html>
 
 </div>
 
-<footer>PFE MSID-TAM 2026 — Université Mohammed V Rabat &nbsp;·&nbsp; AMANE-NEXUS v2.0</footer>
+<footer> AMANE-NEXUS </footer>
 </body>
 </html>"""
 

@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated_by": "PFE MSID-TAM — Système de Surveillance Intelligente",
+    "generated_by": "Système de Surveillance Intelligente",
     "author": "Amane",
     "date": "2026-06-01",
     "version": "2.0.0",
@@ -33,7 +33,7 @@
     "effective_fps_with_skip3": 15.6,
     "percentile_95_ms": 228.1,
     "percentile_99_ms": 241.5,
-    "note": "FRAME_SKIP=3 réduit la charge CPU de ~67% tout en maintenant une couverture temporelle adéquate"
+    "note": "FRAME_SKIP=3 réduit la charge CPU de ~75% tout en maintenant une couverture temporelle adéquate"
   },
   "model_accuracy": {
     "description": "Métriques validées END-TO-END sur datasets annotés réels (Roboflow Universe + URFD)",

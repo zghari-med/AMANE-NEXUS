@@ -1,5 +1,5 @@
 # ===============================================================================
-# GitLab CI/CD - AMANE-NEXUS - PFE MSID-TAM
+# GitLab CI/CD - AMANE-NEXUS
 # ===============================================================================
 
 variables:
@@ -232,7 +232,7 @@ pipeline-report:
       optional: true
   script:
     - echo "================================================================"
-    - echo " PFE MSID-TAM - Rapport CI/CD GitLab"
+    - echo " Rapport CI/CD GitLab"
     - echo " Projet  $CI_PROJECT_NAME"
     - echo " Branche $CI_COMMIT_BRANCH"
     - echo " Commit  $CI_COMMIT_SHORT_SHA"
