@@ -96,16 +96,22 @@ def set_security_headers(response):
     return response
 
 # ── A10 : Protection SSRF — validation des URLs de caméra ─────────────────────
+# Toujours bloqués (dangereux même en local) :
+_BLOCKED_RANGES = [
+    ipaddress.ip_network('127.0.0.0/8'),       # loopback
+    ipaddress.ip_network('169.254.0.0/16'),    # link-local / AWS metadata (169.254.169.254)
+    ipaddress.ip_network('::1/128'),           # IPv6 loopback
+]
+# Bloqués uniquement si ALLOW_PRIVATE_IPS=false (déploiement cloud)
 _PRIVATE_RANGES = [
     ipaddress.ip_network('10.0.0.0/8'),
     ipaddress.ip_network('172.16.0.0/12'),
     ipaddress.ip_network('192.168.0.0/16'),
-    ipaddress.ip_network('127.0.0.0/8'),
-    ipaddress.ip_network('169.254.0.0/16'),  # AWS metadata
-    ipaddress.ip_network('::1/128'),
     ipaddress.ip_network('fc00::/7'),
 ]
 _ALLOWED_SCHEMES = {'http', 'https', 'rtsp', 'rtsps'}
+# Par défaut True : caméras IP locales (192.168.x.x, 10.x.x.x) sont le cas d'usage principal
+_ALLOW_PRIVATE_IPS = os.environ.get('ALLOW_PRIVATE_IPS', 'true').lower() == 'true'
 
 def _is_ssrf_safe(url: str) -> tuple:
     """Retourne (True, '') si l'URL est sûre, (False, raison) sinon."""
@@ -114,19 +120,24 @@ def _is_ssrf_safe(url: str) -> tuple:
         parsed = urlparse(url)
         scheme = parsed.scheme.lower()
         if scheme not in _ALLOWED_SCHEMES:
-            return False, f"Schéma non autorisé: {scheme} (autorisés: {_ALLOWED_SCHEMES})"
+            return False, f"Schéma non autorisé: {scheme} (autorisés: {', '.join(_ALLOWED_SCHEMES)})"
         hostname = parsed.hostname
         if not hostname:
             return False, "Hostname manquant"
-        # Résoudre le hostname en IP
         try:
             ip_str = socket.gethostbyname(hostname)
         except socket.gaierror:
             return False, f"Hostname non résolvable: {hostname}"
         ip = ipaddress.ip_address(ip_str)
-        for private_range in _PRIVATE_RANGES:
-            if ip in private_range:
-                return False, f"Adresse IP interne interdite: {ip_str}"
+        # Toujours bloqué : loopback + metadata cloud
+        for r in _BLOCKED_RANGES:
+            if ip in r:
+                return False, f"Adresse réservée interdite: {ip_str}"
+        # IPs privées : bloquées seulement si ALLOW_PRIVATE_IPS=false
+        if not _ALLOW_PRIVATE_IPS:
+            for r in _PRIVATE_RANGES:
+                if ip in r:
+                    return False, f"IP privée interdite (mode cloud): {ip_str}"
         return True, ''
     except Exception as e:
         return False, str(e)
