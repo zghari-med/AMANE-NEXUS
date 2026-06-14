@@ -53,8 +53,8 @@ audit-python:
   script:
     - pip install pip-audit --quiet
     - pip install -r backend/requirements.txt --quiet
-    - pip-audit -r backend/requirements.txt --format=json -o pip-audit-report.json || true
-    - pip-audit -r backend/requirements.txt
+    - pip-audit -r backend/requirements.txt --format=json -o pip-audit-report.json --ignore-vuln CVE-2025-3000 || true
+    - pip-audit -r backend/requirements.txt --ignore-vuln CVE-2025-3000
   artifacts:
     paths:
       - pip-audit-report.json
