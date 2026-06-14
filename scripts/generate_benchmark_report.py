@@ -144,7 +144,7 @@ html = f"""<!DOCTYPE html>
 </head>
 <body>
 <header>
-  <h1>📊 Rapport de Performance — PFE MSID-TAM</h1>
+  <h1>Rapport de Performance</h1>
   <p>AMANE-NEXUS v{meta['version']} &nbsp;·&nbsp; {meta['description']} &nbsp;·&nbsp; Généré le {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC</p>
 </header>
 
@@ -266,7 +266,6 @@ html = f"""<!DOCTYPE html>
 
 </div>
 
-<footer>PFE MSID-TAM 2026 — Université Mohammed V Rabat &nbsp;·&nbsp; AMANE-NEXUS v{meta['version']} &nbsp;·&nbsp; Validation sur {meta['total_images_tested']} images + {meta['total_videos_tested']} vidéos</footer>
 </body>
 </html>"""
 

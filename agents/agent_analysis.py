@@ -38,7 +38,7 @@ FALL_DETECTION = {
 
 # Paramètres attroupements
 CROWDING_DETECTION = {
-    "min_crowd_size": 3,  # min personnes pour un attroupement
+    "min_crowd_size": 10,  # min personnes pour un attroupement
     "density_threshold": 0.05,  # densité min (personnes / pixels²) pour une zone dense
     "proximity_distance": 100,  # pixels - distance max entre personnes d'un groupe
     "frame_confirmation": 15,  # frames consécutives pour confirmer attroupement

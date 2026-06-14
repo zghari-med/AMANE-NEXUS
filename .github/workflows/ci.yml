@@ -1,4 +1,4 @@
-name: CI/CD — Surveillance Platform PFE MSID
+name: CI/CD — Surveillance Platform 
 
 on:
   push:
@@ -198,7 +198,7 @@ jobs:
       - name: Afficher status final du pipeline
         run: |
           echo "================================================================"
-          echo " PFE MSID-TAM — Rapport CI/CD"
+          echo " Rapport CI/CD"
           echo "================================================================"
           echo " Lint backend   : ${{ needs.lint-backend.result }}"
           echo " Tests backend  : ${{ needs.test-backend.result }}"

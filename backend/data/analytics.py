@@ -1,5 +1,4 @@
 """
-AnalyticsEngine — couche Data Science du projet PFE MSID-TAM.
 Utilise Pandas pour agréger, filtrer et calculer les métriques
 à partir des alertes et analyses stockées dans MongoDB.
 """
@@ -26,7 +25,7 @@ GT_ANNOTATIONS = {
 class AnalyticsEngine:
     """
     Moteur d'analyse statistique et de science des données pour la plateforme
-    de surveillance intelligente MSID-TAM.
+    de surveillance intelligente.
     """
 
     def __init__(self, mongo_uri: str = "mongodb://localhost:27017/",
