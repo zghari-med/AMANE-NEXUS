@@ -44,6 +44,40 @@ lint-backend:
     - flake8 backend/ --max-line-length=120 --exclude=backend/venv,backend/__pycache__,backend/data
 
 # ===============================================================================
+# STAGE 1b - SCAN DÉPENDANCES VULNÉRABLES (A06 OWASP)
+# ===============================================================================
+
+audit-python:
+  extends: .python-base
+  stage: lint
+  script:
+    - pip install pip-audit --quiet
+    - pip install -r backend/requirements.txt --quiet
+    - pip-audit -r backend/requirements.txt --format=json -o pip-audit-report.json || true
+    - pip-audit -r backend/requirements.txt
+  artifacts:
+    paths:
+      - pip-audit-report.json
+    when: always
+    expire_in: 7 days
+  allow_failure: true
+
+audit-frontend:
+  stage: lint
+  image: node:18-alpine
+  script:
+    - cd frontend
+    - npm ci --quiet
+    - npm audit --audit-level=high || true
+    - npm audit --json > ../npm-audit-report.json || true
+  artifacts:
+    paths:
+      - npm-audit-report.json
+    when: always
+    expire_in: 7 days
+  allow_failure: true
+
+# ===============================================================================
 # STAGE 2 - TEST
 # ===============================================================================
 
