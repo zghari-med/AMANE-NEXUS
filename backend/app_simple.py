@@ -160,7 +160,7 @@ def token_required(f):
         # Exception : endpoint de streaming vidéo accepte aussi ?token= car
         # les balises <video> ne peuvent pas envoyer de header personnalisé.
         token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
-        if not token and request.endpoint in ('stream_video',):
+        if not token and request.endpoint in ('serve_video', 'stream_video'):
             token = request.args.get('token', '').strip()
         if not token:
             return jsonify({'error': 'Missing token'}), 401
