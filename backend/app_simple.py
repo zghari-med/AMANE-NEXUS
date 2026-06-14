@@ -5,6 +5,8 @@ import os
 import logging
 import jwt
 import secrets
+import socket
+import ipaddress
 import threading
 import time
 import subprocess
@@ -73,6 +75,61 @@ limiter = Limiter(
     default_limits=[],
     storage_uri='memory://',
 )
+
+# ── A08 : Headers de sécurité sur toutes les réponses ─────────────────────────
+@app.after_request
+def set_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options']        = 'DENY'
+    response.headers['X-XSS-Protection']       = '1; mode=block'
+    response.headers['Referrer-Policy']        = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy']     = 'camera=(), microphone=(), geolocation=()'
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: blob:; "
+        "media-src 'self' blob:; "
+        "connect-src 'self';"
+    )
+    return response
+
+# ── A10 : Protection SSRF — validation des URLs de caméra ─────────────────────
+_PRIVATE_RANGES = [
+    ipaddress.ip_network('10.0.0.0/8'),
+    ipaddress.ip_network('172.16.0.0/12'),
+    ipaddress.ip_network('192.168.0.0/16'),
+    ipaddress.ip_network('127.0.0.0/8'),
+    ipaddress.ip_network('169.254.0.0/16'),  # AWS metadata
+    ipaddress.ip_network('::1/128'),
+    ipaddress.ip_network('fc00::/7'),
+]
+_ALLOWED_SCHEMES = {'http', 'https', 'rtsp', 'rtsps'}
+
+def _is_ssrf_safe(url: str) -> tuple:
+    """Retourne (True, '') si l'URL est sûre, (False, raison) sinon."""
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        scheme = parsed.scheme.lower()
+        if scheme not in _ALLOWED_SCHEMES:
+            return False, f"Schéma non autorisé: {scheme} (autorisés: {_ALLOWED_SCHEMES})"
+        hostname = parsed.hostname
+        if not hostname:
+            return False, "Hostname manquant"
+        # Résoudre le hostname en IP
+        try:
+            ip_str = socket.gethostbyname(hostname)
+        except socket.gaierror:
+            return False, f"Hostname non résolvable: {hostname}"
+        ip = ipaddress.ip_address(ip_str)
+        for private_range in _PRIVATE_RANGES:
+            if ip in private_range:
+                return False, f"Adresse IP interne interdite: {ip_str}"
+        return True, ''
+    except Exception as e:
+        return False, str(e)
 
 # MongoDB
 MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
@@ -590,6 +647,12 @@ def create_camera():
     cam_type = data.get('type', 'http')
     if not name or not url:
         return jsonify({'error': 'Nom et URL sont requis'}), 400
+    # A10 — Protection SSRF : rejeter les URLs vers des adresses internes
+    if cam_type not in ('youtube',):  # YouTube est résolu côté serveur via yt-dlp, pas de requête directe
+        safe, reason = _is_ssrf_safe(url)
+        if not safe:
+            log.warning(f"SSRF bloqué — user={request.user_id} url={url} raison={reason}")
+            return jsonify({'error': f'URL non autorisée : {reason}'}), 400
     cam = {
         'name': name, 'url': url, 'location': location, 'type': cam_type,
         'created_at': datetime.utcnow(),
