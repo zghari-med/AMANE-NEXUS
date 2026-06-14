@@ -3,15 +3,15 @@
 **Système de Surveillance Intelligente Multi-Agent**  
 Mohamed Z'GHARI
 
-[![CI/CD](https://github.com/zghari-med/AMANE-NEXUS/actions/workflows/ci.yml/badge.svg)](https://github.com/zghari-med/AMANE-NEXUS/actions/workflows/ci.yml)
+[![CI/CD GitHub](https://github.com/zghari-med/AMANE-NEXUS/actions/workflows/ci.yml/badge.svg)](https://github.com/zghari-med/AMANE-NEXUS/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)](https://python.org)
 [![React](https://img.shields.io/badge/React-18.2-61DAFB?logo=react)](https://reactjs.org)
-[![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
+[![Flask](https://img.shields.io/badge/Flask-3.1.3-000000?logo=flask)](https://flask.palletsprojects.com)
 [![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?logo=mongodb)](https://mongodb.com)
 [![YOLOv8](https://img.shields.io/badge/YOLOv8n-CPU-FF6B6B)](https://ultralytics.com)
 [![Docker](https://img.shields.io/badge/Docker-multi--stage-2496ED?logo=docker)](https://docker.com)
+[![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-10%2F10%20couvert-16a34a)](scripts/generate_owasp_report.py)
 [![Tests](https://img.shields.io/badge/Tests-60%2F60%20passed-brightgreen)](backend/tests/)
-[![License](https://img.shields.io/badge/License-Academic-lightgrey)](LICENSE)
 
 ---
 
@@ -83,10 +83,10 @@ Vidéo Upload / Flux Caméra
 
 | Technologie | Version | Rôle |
 |---|---|---|
-| Flask | 3.0.0 | API REST — 18 endpoints |
+| Flask | 3.1.3 | API REST — 18 endpoints |
 | MongoDB | 6.0 | Stockage analyses, alertes, utilisateurs |
 | Redis | 7 | Cache analytics |
-| YOLOv8n | 8.1.18 | Détection objets (CPU-only) |
+| YOLOv8n | 8.3.0 | Détection objets (CPU-only) |
 | OpenCV | 4.8.1 | Vision par ordinateur |
 | PyJWT | 2.13.0 | Authentification JWT |
 | bcrypt | 4.1.2 | Hachage mots de passe |
@@ -312,12 +312,12 @@ AMANE-NEXUS/
 
 ## Pipeline CI/CD
 
-Le pipeline GitHub Actions exécute **5 jobs en séquence** à chaque push sur `main` :
+Le projet utilise **deux pipelines CI/CD** : GitHub Actions et GitLab CI/CD.
+
+### GitHub Actions (`.github/workflows/ci.yml`)
 
 ```
 lint-backend → test-backend → validate-benchmarks → test-frontend → docker-build
-                                                                          │
-                                                                    pipeline-report
 ```
 
 | Job | Description | Outil |
@@ -327,6 +327,48 @@ lint-backend → test-backend → validate-benchmarks → test-frontend → dock
 | `validate-benchmarks` | F1 ≥ 0.50, Précision ≥ 40% | Python assertions |
 | `test-frontend` | Build production React | Vite build |
 | `docker-build` | Build image multi-stage | docker/build-push-action |
+
+### GitLab CI/CD (`.gitlab-ci.yml`) — 5 stages
+
+```
+lint ──► test ──► docker ──► deploy ──► report
+  │                                       │
+  ├─ lint-backend (flake8)                ├─ owasp-report  (HTML 30j)
+  ├─ audit-python (pip-audit + CVE scan)  ├─ benchmark-report (HTML 30j)
+  └─ audit-frontend (npm audit)           └─ pipeline-report (résumé)
+```
+
+| Stage | Job | Description |
+|---|---|---|
+| lint | `audit-python` | pip-audit OWASP A06 — CVE scan Python deps |
+| lint | `audit-frontend` | npm audit — CVE scan Node deps |
+| test | `test-backend` | pytest 60 tests + coverage |
+| test | `validate-benchmarks` | validation benchmark_results.json |
+| docker | `docker-build` | Build image Docker |
+| deploy | `deploy` | Push GitLab Container Registry (main only) |
+| report | `owasp-report` | Génère `owasp-report.html` (artifact 30 jours) |
+| report | `benchmark-report` | Génère `benchmark-report.html` (artifact 30 jours) |
+
+> Les rapports HTML sont disponibles dans **GitLab → CI/CD → Pipelines → Artifacts** après chaque push.
+
+---
+
+## Sécurité — OWASP Top 10
+
+| # | Catégorie | Statut | Implémentation |
+|---|---|---|---|
+| A01 | Broken Access Control | ✅ Couvert | JWT stateless + RBAC (admin / operator / viewer) |
+| A02 | Cryptographic Failures | ✅ Couvert | bcrypt cost=12 + JWT HS256 + SECRET_KEY auto-généré |
+| A03 | Injection | ✅ Couvert | ObjectId typé MongoDB — injection NoSQL impossible |
+| A04 | Insecure Design | ✅ Couvert | Architecture multi-agent isolée, uploads restreints |
+| A05 | Security Misconfiguration | ✅ Couvert | .env exclu, CORS limité, variables Docker Compose |
+| A06 | Vulnerable & Outdated Components | ✅ Couvert | pip-audit en CI/CD — 25 CVE corrigées |
+| A07 | Identification & Auth Failures | ✅ Couvert | Flask-Limiter : 10 req/min + 50 req/hr sur /login |
+| A08 | Software & Data Integrity | ✅ Couvert | 6 headers HTTP (CSP, X-Frame-Options…) via @after_request |
+| A09 | Security Logging & Monitoring | ✅ Couvert | log_activity() — chaque action tracée dans MongoDB |
+| A10 | SSRF | ✅ Couvert | _is_ssrf_safe() bloque loopback et link-local |
+
+> Rapport détaillé généré automatiquement : `scripts/generate_owasp_report.py`
 
 ---
 
