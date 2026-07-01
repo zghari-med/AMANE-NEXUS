@@ -257,18 +257,6 @@ python -m pytest tests/ -v --cov=.
 | `test_benchmarks.py` | 10 | Validation structure et valeurs benchmark_results.json |
 | `test_falls.py` | 1 | Validation URFD recall = 100% |
 
-### Résultats agents (données synthétiques)
-
-| Agent | Précision | Rappel | F1 | Accuracy |
-|---|---|---|---|---|
-| Chute | 1.000 | 0.667 | 0.800 | 0.833 |
-| Attroupement | 1.000 | 0.667 | 0.800 | 0.833 |
-| Objet abandonné | 1.000 | 0.667 | 0.800 | 0.833 |
-
-> Précision = 1.0 → aucune fausse alarme sur données synthétiques.  
-> Rappel = 0.667 → les FN sont intentionnels (cooldown anti-doublon actif).
-
----
 
 ## Structure du Projet
 
